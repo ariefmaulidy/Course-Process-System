@@ -1,0 +1,123 @@
+package chatgroupdiscussion
+
+import (
+
+
+	"goji.io"
+    "goji.io/pat"
+    "gopkg.in/mgo.v2"
+    "gopkg.in/mgo.v2/bson"
+    "../../auth"
+    "../../jsonhandler"
+)
+
+type ChatGroupDiscussion struct {
+	IdCGD	        int			`json:"idcgd"`
+	IdMataKuliah	int		    `json:"idmatakuliah"`
+    IdPesan         int         `json:"idpesan"`
+    IdPengirim      int         `json:"idpengirim"`
+}
+
+func RoutesChatGroupDiscussion(mux *goji.Mux, session *mgo.Session) {
+
+    mux.HandleFunc(pat.Get("/cgd"), AllChatGroupDiscussion(session)) //untuk retrieve smua yang di db
+    mux.HandleFunc(pat.Post("/addcgd"), AddChatGroupDiscussion(session))
+    mux.HandleFunc(pat.Get("/cgd/:idcgd"), GetAttributeChatGroupDiscussion(session))
+}
+
+func AllChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        session := s.Copy()
+        defer session.Close()
+
+        c := session.DB("ccs").C("chatgroupdiscussion")
+
+        var chatgroupdiscussion []ChatGroupDiscussion
+        err := c.Find(bson.M{}).All(&chatgroupdiscussion)
+        if err != nil {
+            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+            log.Println("Failed get all chatgroupdiscussion: ", err)
+            return
+        }
+
+        respBody, err := json.MarshalIndent(chatgroupdiscussion, "", "  ")
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
+    }
+}
+
+func AddChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        session := s.Copy()
+        defer session.Close()
+
+        var chatgroupdiscussion ChatGroupDiscussion
+        decoder := json.NewDecoder(r.Body)
+        err := decoder.Decode(&chatgroupdiscussion)
+        if err != nil {
+            jsonhandler.SendWithJSON(w, "Incorrect body", http.StatusBadRequest)
+            return
+        }
+
+        c := session.DB("ccs").C("chatgroupdiscussion")
+
+        //untuk auto increment
+        var lastChatGroupDiscussion ChatGroupDiscussion
+        var lastId  int
+
+        err = c.Find(nil).Sort("-$natural").Limit(1).One(&lastChatGroupDiscussion)
+        if err != nil {
+            lastId = 0
+        } else {
+            lastId,err = strconv.Atoi(lastChatGroupDiscussion.IdCGD)
+        }
+        currentId := lastId + 1
+        chatgroupdiscussion.IdCGD = strconv.Itoa(currentId)
+
+        err = c.Insert(chatgroupdiscussion)
+        if err != nil {
+            if mgo.IsDup(err) {
+                jsonhandler.SendWithJSON(w, "duplicate", http.StatusOK)
+                return
+            }
+
+            jsonhandler.SendWithJSON(w, "Database error", http.StatusNotFound)
+            log.Println("Failed insert chatgroupdiscussion: ", err)
+            return
+        }
+
+        w.Header().Set("Content-Type", "application/json")
+        w.Header().Set("Location", r.URL.Path+"/"+chatgroupdiscussion.IdCGD)
+        w.WriteHeader(http.StatusCreated)
+    }
+}
+
+func GetAttributeChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        session := s.Copy()
+        defer session.Close()
+
+        IdCGD := pat.Param(r, "idcgd")
+
+        c := session.DB("ccs").C("chatgroupdiscussion")
+
+        var chatgroupdiscussion ChatGroupDiscussion
+        err := c.Find(bson.M{"idcgd": IdCGD}).One(&chatgroupdiscussion)
+        if err != nil {
+            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+            log.Println("Failed find chatgroupdiscussion: ", err)
+            return
+        }
+
+        respBody, err := json.MarshalIndent(chatgroupdiscussion, "", "  ")
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
+    }
+}
+
