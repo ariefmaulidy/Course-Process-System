@@ -15,6 +15,7 @@ type User struct {
 	IdUser		int		`json:"iduser"`
 	Username	string	`json:"username"`
 	Password	string	`json:"password"`
+    Class       string  `json:"class"`
 }
 
 func RoutesUser(mux *goji.Mux, session *mgo.Session) {

@@ -14,7 +14,7 @@ import (
 type PesertaKuliah struct {
     IdPesertaKuliah int         `json:"idpesertakuliah"`
     IdJadwalKuliah  int         `json:"idjadwalkuliah"`
-    IdMahasiswa     int         `json:"idmahasiswa"`
+    IdUser          int         `json:"iduser"`
 }
 
 func RoutesPesertaKuliah(mux *goji.Mux, session *mgo.Session) {
