@@ -1,4 +1,4 @@
-package pjkelas
+package mahasiswa
 
 import (
 
@@ -11,26 +11,27 @@ import (
     "../../jsonhandler"
 )
 
-type PJKelas struct {
-	IdPJ			int			`json:"idpj"`
+type Mahasiswa struct {
+	IdMahasiswa	    int			`json:"idmahasiswa"`
 	Nama			string		`json:"nama"`
 	IdUser			int	 		`json:"iduser"`
 	Departemen		string		`json:"departemen"`
 	NIM				string		`json:"nim"`
+    Status          string      `json:"status"`
 }
 
-func RoutesPJKelas(mux *goji.Mux, session *mgo.Session) {
+func RoutesMahasiwa(mux *goji.Mux, session *mgo.Session) {
 
-    mux.HandleFunc(pat.Get("/pjkelas"), AllPJKelas(session)) //untuk retrieve smua yang di db
-    mux.HandleFunc(pat.Post("/addpjkelas"), AddPJKelas(session))
-    mux.HandleFunc(pat.Get("/pjkelas/:iduser"), GetAttributePJKelas(session))
+    mux.HandleFunc(pat.Get("/mahasiswa"), AllMahasiswa(session)) //untuk retrieve smua yang di db
+    mux.HandleFunc(pat.Post("/addmahasiswa"), AddMahasiswa(session))
+    mux.HandleFunc(pat.Get("/mahasiswa/:iduser"), GetAttributeMahasiswa(session))
 }
 
-func EnsurePJKelas(s *mgo.Session) {
+func EnsureMahasiswa(s *mgo.Session) {
     session := s.Copy()
     defer session.Close()
 
-    c := session.DB("ccs").C("pjkelas")
+    c := session.DB("ccs").C("mahasiswa")
 
     index := mgo.Index{
         Key:        []string{"nim"},
@@ -45,22 +46,22 @@ func EnsurePJKelas(s *mgo.Session) {
     }
 }
 
-func AllPJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+func AllMahasiswa(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
         session := s.Copy()
         defer session.Close()
 
-        c := session.DB("ccs").C("pjkelas")
+        c := session.DB("ccs").C("mahasiswa")
 
-        var pjkelas []PJKelas
-        err := c.Find(bson.M{}).All(&pjkelas)
+        var mahasiswa []Mahasiswa
+        err := c.Find(bson.M{}).All(&mahasiswa)
         if err != nil {
             jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
-            log.Println("Failed get all pjkelas: ", err)
+            log.Println("Failed get all mahasiswa: ", err)
             return
         }
 
-        respBody, err := json.MarshalIndent(pjkelas, "", "  ")
+        respBody, err := json.MarshalIndent(mahasiswa, "", "  ")
         if err != nil {
             log.Fatal(err)
         }
@@ -69,35 +70,35 @@ func AllPJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-func AddPJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+func AddMahasiswa(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
         session := s.Copy()
         defer session.Close()
 
-        var pjkelas PJKelas
+        var mahasiswa Mahasiswa
         decoder := json.NewDecoder(r.Body)
-        err := decoder.Decode(&pjkelas)
+        err := decoder.Decode(&mahasiswa)
         if err != nil {
             jsonhandler.SendWithJSON(w, "Incorrect body", http.StatusBadRequest)
             return
         }
 
-        c := session.DB("ccs").C("pjkelas")
+        c := session.DB("ccs").C("mahasiswa")
 
         //untuk auto increment
-        var lastPJKelas PJKelas
+        var lastMahasiswa Mahasiswa
         var lastId  int
 
-        err = c.Find(nil).Sort("-$natural").Limit(1).One(&lastPJKelas)
+        err = c.Find(nil).Sort("-$natural").Limit(1).One(&lastMahasiswa)
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastPJKelas.IdPJ)
+            lastId,err = strconv.Atoi(lastMahasiswa.IdMahasiswa)
         }
         currentId := lastId + 1
-        pjkelas.IdPJ = strconv.Itoa(currentId)
+        mahasiswa.IdMahasiswa = strconv.Itoa(currentId)
 
-        err = c.Insert(pjkelas)
+        err = c.Insert(mahasiswa)
         if err != nil {
             if mgo.IsDup(err) {
                 jsonhandler.SendWithJSON(w, "duplicate", http.StatusOK)
@@ -105,34 +106,34 @@ func AddPJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
             }
 
             jsonhandler.SendWithJSON(w, "Database error", http.StatusNotFound)
-            log.Println("Failed insert pjkelas: ", err)
+            log.Println("Failed insert mahasiswa: ", err)
             return
         }
 
         w.Header().Set("Content-Type", "application/json")
-        w.Header().Set("Location", r.URL.Path+"/"+pjkelas.NIM)
+        w.Header().Set("Location", r.URL.Path+"/"+mahasiswa.NIM)
         w.WriteHeader(http.StatusCreated)
     }
 }
 
-func GetAttributePJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+func GetAttributeMahasiswa(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
         session := s.Copy()
         defer session.Close()
 
         IdUser := pat.Param(r, "iduser")
 
-        c := session.DB("ccs").C("pjkelas")
+        c := session.DB("ccs").C("mahasiswa")
 
-        var pjkelas PJKelas
-        err := c.Find(bson.M{"iduser": IdUser}).One(&pjkelas)
+        var mahasiswa Mahasiswa
+        err := c.Find(bson.M{"iduser": IdUser}).One(&mahasiswa)
         if err != nil {
             jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
-            log.Println("Failed find pjkelas: ", err)
+            log.Println("Failed find mahasiswa: ", err)
             return
         }
 
-        respBody, err := json.MarshalIndent(pjkelas, "", "  ")
+        respBody, err := json.MarshalIndent(mahasiswa, "", "  ")
         if err != nil {
             log.Fatal(err)
         }

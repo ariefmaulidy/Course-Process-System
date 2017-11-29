@@ -17,7 +17,6 @@ type MataKuliah struct {
     KodeMataKuliah  string      `json:"kodematakuliah"`
 	IdKordinator	int	 		`json:"idkordinator"`
 	IdDosen		    int		    `json:"iddosen"`
-    IdPJ            int         `json:"idpj"`
 	Semester		int		    `json:"semester"`
 }
 

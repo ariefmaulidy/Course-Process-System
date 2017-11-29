@@ -25,7 +25,7 @@ type BAP struct {
 func RoutesBAP(mux *goji.Mux, session *mgo.Session) {
 
     mux.HandleFunc(pat.Get("/bap"), AllBAP(session)) //untuk retrieve smua yang di db
-    mux.HandleFunc(pat.Post("/addbap"), AddBAP(session))
+    mux.HandleFunc(pat.Post("/addbap"), auth.Validate(AddBAP(session)))
     mux.HandleFunc(pat.Get("/bap/:idbap"), GetAttributeBAP(session))
 }
 

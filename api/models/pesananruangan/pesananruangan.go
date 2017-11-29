@@ -25,7 +25,7 @@ type PesananRuangan struct {
 func RoutesPesananRuangan(mux *goji.Mux, session *mgo.Session) {
 
     mux.HandleFunc(pat.Get("/pesananruangan"), AllPesananRuangan(session)) //untuk retrieve smua yang di db
-    mux.HandleFunc(pat.Post("/addpesananruangan"), AddPesananRuangan(session))
+    mux.HandleFunc(pat.Post("/addpesananruangan"), auth.Validate(AddPesananRuangan(session)))
     mux.HandleFunc(pat.Get("/pesananruangan/:idpesanan"), GetAttributePesananRuangan(session))
 }
 

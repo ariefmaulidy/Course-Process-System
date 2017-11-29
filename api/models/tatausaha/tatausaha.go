@@ -7,6 +7,7 @@ import (
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
+    "../mahasiswa"
     "../../auth"
     "../../jsonhandler"
 )
@@ -24,6 +25,9 @@ func RoutesTataUsaha(mux *goji.Mux, session *mgo.Session) {
     mux.HandleFunc(pat.Get("/tatausaha"), AllTataUsaha(session)) //untuk retrieve smua yang di db
     mux.HandleFunc(pat.Post("/addtatausaha"), AddTataUsaha(session))
     mux.HandleFunc(pat.Get("/tatausaha/:iduser"), GetAttributeTataUsaha(session))
+    //untuk memasukkan BAP cek di fungsi AddBAP di model bap
+    mux.HandleFunc(pat.Put("/assignpjkelas"), auth.Validate(AssignPJKelas(session)))
+    //untuk book ruangan cek di fungsi menambahPesananRuangan  di model pesanan ruangan
 }
 
 func AllTataUsaha(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
@@ -124,12 +128,38 @@ func GetAttributeTataUsaha(s *mgo.Session) func(w http.ResponseWriter, r *http.R
 }
 
 
-func assignPJKelas (s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
+func AssignPJKelas (s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
 	return func(w http.ResponseWriter, r *http.Request){
-		session := s.Copy()
+        claims, ok := r.Context().Value(auth.MyKey).(auth.Claims)
+        if !ok {
+            http.NotFound(w, r)
+            return
+        }		
+
+        IdJadwalKuliah := pat.Param(r, "idjadwalkuliah")
+
+        session := s.Copy()
 		defer session.Close()
 
-		var 
+		r.ParseMultipartForm(500000)
+        nim := r.FormValue("nim")
+
+        c := session.DB("ccs").C("mahasiswa")
+        d := session.DB("ccs").C("jadwalkuliah")
+
+        var mahasiswa Mahasiswa
+        err := c.Find(bson.M{"nim": nim}).One(&mahasiswa)
+        if err != nil {
+            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+            log.Println("Failed find mahasiswa: ", err)
+            return
+        }
+
+        c.Update(bson.M{"nim" : nim}, bson.M{"$set": bson.M{"status": "pjkelas"}})
+        d.Update(bson.M{"idjadwalkuliah": IdJadwalKuliah}, bson.M{"$set": bson.M{"idpj": mahasiswa.IdPJ}})
+
+        w.WriteHeader(http.StatusNoContent)
 	}
 }
+
 
