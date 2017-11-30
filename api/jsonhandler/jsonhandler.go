@@ -16,7 +16,7 @@ func ResponseWithJSON(w http.ResponseWriter, json []byte, code int) {
     w.Write(json)
 }
 
-func SendJSON(w http.ResponseWriter, message string, code int)  {
+func SendWithJSON(w http.ResponseWriter, message string, code int)  {
     w.Header().Set("Content-Type", "application/json; charset=utf-8")
     w.WriteHeader(code)
     fmt.Fprintf(w, message)
