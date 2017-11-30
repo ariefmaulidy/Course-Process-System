@@ -1,28 +1,27 @@
 package pengelolaruangan
 
 import (
-
-
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
     "../../auth"
     "../../jsonhandler"
+    "../pesananruangan"
 )
 
 type PengelolaRuangan struct {
-	IdPengelolaRuangan	int		`json:"idpengelolaruangan"`
 	Nama	            string	`json:"nama"`
 	IdUser	            int	 	`json:"iduser"`
-
 }
 
 func RoutesPengelolaRuangan(mux *goji.Mux, session *mgo.Session) {
 
     mux.HandleFunc(pat.Get("/pengelolaruangan"), AllPengelolaRuangan(session)) //untuk retrieve smua yang di db
     mux.HandleFunc(pat.Post("/addpengelolaruangan"), AddPengelolaRuangan(session))
-    mux.HandleFunc(pat.Get("/pengelolaruangan/:idpengelolaruangan"), GetAttributePengelolaRuangan(session))
+    mux.HandleFunc(pat.Get("/pengelolaruangan/:idpengelolaruangan"), auth.Validate(GetAttributePengelolaRuangan(session)))
+    mux.HandleFunc(pat.Put("/persetujuanpesanan/:idpesanan"), auth.Validate(PersetujuanPesanan(session)))
+    mux.HandleFunc(pat.Put("/penolakanpesanan/:idpesanan"), auth.Validate(PenolakanPesanan(session)))
 }
 
 func AllPengelolaRuangan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
@@ -121,3 +120,40 @@ func GetAttributePengelolaRuangan(s *mgo.Session) func(w http.ResponseWriter, r 
     }
 }
 
+func PersetujuanPesanan(s *mgo.Session) func(w http.ResponseWriter,r *http.Request){
+    return func(w http.ResponseWriter,r *http.Request){
+        claims, ok := r.Context().Value(auth.MyKey).(auth.Claims)
+        if !ok {
+          http.NotFound(w, r)
+          return
+        }
+
+        session := s.Copy()
+        defer session.Close()
+
+        IdPesanan = pat.Param(r,"idpesanan")
+
+        c := session.DB("ccs").C("pesananruangan")
+        c.Update(bson.M{"idpesanan": IdPesanan}, bson.M{"$set": bson.M{"status": "Disetujui","confirmedby":claims.IdUser}})
+        w.WriteHeader(http.StatusNoContent)
+    }
+}
+
+func PenolakanPesanan(s *mgo.Session) func(w http.ResponseWriter,r *http.Request){
+    return func(w http.ResponseWriter,r *http.Request){
+        claims, ok := r.Context().Value(auth.MyKey).(auth.Claims)
+        if !ok {
+          http.NotFound(w, r)
+          return
+        }
+        
+        session := s.Copy()
+        defer session.Close()
+
+        IdPesanan = pat.Param(r,"idpesanan")
+
+        c := session.DB("ccs").C("pesananruangan")
+        c.Update(bson.M{"idpesanan": IdPesanan}, bson.M{"$set": bson.M{"status": "Ditolak"}})
+        w.WriteHeader(http.StatusNoContent)
+    }
+}

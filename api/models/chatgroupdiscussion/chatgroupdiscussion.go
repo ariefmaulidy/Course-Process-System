@@ -72,18 +72,13 @@ func AddChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *http.
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastChatGroupDiscussion.IdCGD)
+            lastId = lastChatGroupDiscussion.IdCGD
         }
         currentId := lastId + 1
-        chatgroupdiscussion.IdCGD = strconv.Itoa(currentId)
+        chatgroupdiscussion.IdCGD = currentId
 
         err = c.Insert(chatgroupdiscussion)
         if err != nil {
-            if mgo.IsDup(err) {
-                jsonhandler.SendWithJSON(w, "duplicate", http.StatusOK)
-                return
-            }
-
             jsonhandler.SendWithJSON(w, "Database error", http.StatusNotFound)
             log.Println("Failed insert chatgroupdiscussion: ", err)
             return

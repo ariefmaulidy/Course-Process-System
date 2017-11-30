@@ -1,8 +1,12 @@
 package bap
 
 import (
-
-
+    "encoding/json"
+    "log"
+    "time"
+    "net/http"
+    "strconv"
+    
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
@@ -12,21 +16,21 @@ import (
 )
 
 type BAP struct {
-	IdBAP	        int			`json:"idcgd"`
+	IdBAP	        int			`json:"idbap"`
 	Tanggal	        time.Time   `json:"tanggal"`
     IdMataKuliah    int         `json:"idmatakuliah"`
     TopikKuliah     string      `json:"topikkuliah"`
     JumlahPeserta   int         `json:"jumlahpeserta"`
-    IdDosen         int         `json:"iddosen"`
+    IdUser          int         `json:"iduser"`
     CreatedBy       int         `json:"createdby"`
     UpdatedBy       int         `json:"updatedby"`
 }
 
 func RoutesBAP(mux *goji.Mux, session *mgo.Session) {
-
     mux.HandleFunc(pat.Get("/bap"), AllBAP(session)) //untuk retrieve smua yang di db
     mux.HandleFunc(pat.Post("/addbap"), auth.Validate(AddBAP(session)))
     mux.HandleFunc(pat.Get("/bap/:idbap"), GetAttributeBAP(session))
+    mux.HandleFunc(pat.Put("/editbap/:idbap"), auth.Validate(EditBAP(session)))
 }
 
 func AllBAP(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
@@ -55,6 +59,12 @@ func AllBAP(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 
 func AddBAP(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
+        claims, ok := r.Context().Value(auth.MyKey).(auth.Claims)
+        if !ok {
+          http.NotFound(w, r)
+          return
+		}
+        
         session := s.Copy()
         defer session.Close()
 
@@ -76,10 +86,11 @@ func AddBAP(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastBAP.IdBAP)
+            lastId,err = lastBAP.IdBAP
         }
         currentId := lastId + 1
-        bap.IdBAP = strconv.Itoa(currentId)
+        bap.IdBAP = currentId
+        bap.CreatedBy = claims.IdUser
 
         err = c.Insert(bap)
         if err != nil {
@@ -125,3 +136,57 @@ func GetAttributeBAP(s *mgo.Session) func(w http.ResponseWriter, r *http.Request
     }
 }
 
+func EditBAP(s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
+    return func(w http.ResponseWriter, r *http.Request){
+        claims, ok := r.Context().Value(auth.MyKey).(auth.Claims)
+        if !ok {
+          http.NotFound(w, r)
+          return
+        }
+        
+        session := s.Copy()
+        defer session.Close()
+
+        var varmap map[string]interface{}
+        in := []byte(`{}`)
+        json.Unmarshal(in, &varmap)
+
+        IdBAP := pat.Param(r, "idbap")
+
+        c := session.DB("ccs").C("bap")
+
+        r.ParseMultipartForm(500000)
+
+        if r.FormValue("tanggal") != ""{
+            varmap["tanggal"] = r.FormValue("tanggal")
+        }
+
+        if r.FormValue("topikkuliah") != ""{
+            varmap["topikkuliah"] = r.FormValue("topikkuliah")
+        }
+
+        if r.FormValue("jumlahpeserta") != ""{
+            varmap["jumlahpeserta"] = r.FormValue("jumlahpeserta")
+        }
+
+        if r.FormValue("iduser") != ""{
+            varmap["iduser"] = r.FormValue("iduser")
+        }
+
+        varmap["updatedBy"] = claims.IdUser
+
+        err := c.Update(bson.M{"idbap": IdBAP},bson.M{"$set": varmap})
+        if err != nil {
+            switch err {
+            default:
+                jsonhandler.ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+                log.Println("Failed update BAP: ", err)
+                jsonhandler.SendWithJSON(w, "Gagal mengupdate BAP", http.StatusOK)
+                return
+            case mgo.ErrNotFound:
+                jsonhandler.SendWithJSON(w, "BAP not found", http.StatusNotFound)
+                return
+            }
+        }
+    }
+}

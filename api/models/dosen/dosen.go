@@ -9,10 +9,10 @@ import (
     "gopkg.in/mgo.v2/bson"
     "../../auth"
     "../../jsonhandler"
+    "../matakuliah"
 )
 
 type Dosen struct {
-	IdDosen			int			`json:"iddosen"`
 	Nama			string		`json:"nama"`
 	IdUser			int	 		`json:"iduser"`
 	Departemen		string		`json:"departemen"`
@@ -21,7 +21,6 @@ type Dosen struct {
 }
 
 func RoutesDosen(mux *goji.Mux, session *mgo.Session) {
-
     mux.HandleFunc(pat.Get("/dosen"), AllDosen(session)) //untuk retrieve smua yang di db
     mux.HandleFunc(pat.Post("/adddosen"), AddDosen(session))
     mux.HandleFunc(pat.Get("/dosen/:iduser"), GetAttributeDosen(session))
@@ -75,10 +74,10 @@ func AddDosen(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastDosen.IdDosen)
+            lastId = lastDosen.IdDosen
         }
         currentId := lastId + 1
-        dosen.IdDosen = strconv.Itoa(currentId)
+        dosen.IdDosen = currentId
 
         err = c.Insert(dosen)
         if err != nil {
@@ -123,4 +122,3 @@ func GetAttributeDosen(s *mgo.Session) func(w http.ResponseWriter, r *http.Reque
         jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
     }
 }
-

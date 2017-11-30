@@ -13,7 +13,6 @@ import (
 )
 
 type Tatausaha struct {
-	IdTU		int    	`json:"idtu"`
 	Nama		string 	`json:"nama"`
 	IdUser      int     `json:"iduser"`
 	Departemen	string	`json:"departemen"`
@@ -128,7 +127,7 @@ func GetAttributeTataUsaha(s *mgo.Session) func(w http.ResponseWriter, r *http.R
 }
 
 
-func AssignPJKelas (s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
+func AssignPJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
 	return func(w http.ResponseWriter, r *http.Request){
         claims, ok := r.Context().Value(auth.MyKey).(auth.Claims)
         if !ok {

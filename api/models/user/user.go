@@ -1,14 +1,16 @@
 package user
 
 import (
-
-
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
     "../../auth"
     "../../jsonhandler"
+    "../tatausaha"
+    "../dosen"
+    "../pengelolaruangan"
+    "../mahasiswa"
 )
 
 type User struct {
@@ -19,8 +21,6 @@ type User struct {
 }
 
 func RoutesUser(mux *goji.Mux, session *mgo.Session) {
-	
-
     mux.HandleFunc(pat.Get("/user"), AllUser(session)) //untuk retrieve smua yang di db
     mux.HandleFunc(pat.Post("/register"), Register(session))
     mux.HandleFunc(pat.Post("/login"), Login(session)) // login
@@ -78,12 +78,16 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         defer session.Close()
 
         var user User
-        decoder := json.NewDecoder(r.Body)
-        err := decoder.Decode(&user)
-        if err != nil {
-            jsonhandler.SendJSON(w, "Incorrect body", http.StatusBadRequest)
-            return
+
+        r.ParseMultipartForm(500000)
+
+        if r.FormValue("username") != ""{
+            user.Username = r.FormValue("username")
         }
+        if r.FormValue("class") != ""{
+            user.Class = r.FormValue("class")
+        }
+        
 
         c := session.DB("ccs").C("user")
 
@@ -95,12 +99,12 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastUser.IdUser)
+            lastId = lastUser.IdUser
         }
         currentId := lastId + 1
-        user.IdUser = strconv.Itoa(currentId)
+        user.IdUser = currentId
 
-        passEncrypt := sha256.Sum256([]byte(user.Password))
+        passEncrypt := sha256.Sum256([]byte(varmap["Password"]))
         user.Password = fmt.Sprintf("%x", passEncrypt)
 
         err = c.Insert(user)
@@ -113,6 +117,100 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
             jsonhandler.SendJSON(w, "Database error", http.StatusNotFound)
             log.Println("Failed insert user: ", err)
             return
+        }
+
+        if user.Class == "TataUsaha"{
+            var tu tatausaha.TataUsaha
+
+            if r.FormValue("nama") != "" {
+                tu.Nama = r.FormValue("nama")
+            }
+            if r.FormValue("departemen") != "" {
+                tu.Departemen = r.FormValue("departemen")
+            }
+            if r.FormValue("fakultas") != "" {
+                tu.Fakultas = r.FormValue("fakultas")
+            }
+            tu.IdUser = currentId
+
+            d := session.DB("ccs").C("tatausaha")
+            
+            err = d.Insert(tu)
+            if err != nil { 
+                jsonhandler.SendJSON(w, "Database error", http.StatusNotFound)
+                log.Println("Failed insert tata usaha: ", err)
+                return
+            }
+        }
+
+        if user.Class == "Dosen"{
+            var dos dosen.Dosen
+
+            if r.FormValue("nama") != "" {
+                dos.Nama = r.FormValue("nama")
+            }
+            if r.FormValue("departemen") != "" {
+                dos.Departemen = r.FormValue("departemen")
+            }
+            if r.FormValue("fakultas") != "" {
+                dos.Fakultas = r.FormValue("fakultas")
+            }
+            if r.FormValue("nidn") != "" {
+                dos.NIDN = r.FormValue("nidn")
+            }
+            dos.IdUser = currentId
+
+            e := session.DB("ccs").C("dosen")
+            
+            err = e.Insert(dos)
+            if err != nil { 
+                jsonhandler.SendJSON(w, "Database error", http.StatusNotFound)
+                log.Println("Failed insert dosen: ", err)
+                return
+            }
+        }
+
+        if user.Class == "PengelolaRuangan"{
+            var pengelola pengelolaruangan.PengelolaRuangan    
+            
+            if r.FormValue("nama") != "" {
+                pengelola.Nama = r.FormValue("nama")
+            }
+            pengelola.IdUser = currentId
+
+            e := session.DB("ccs").C("pengelolaruangan")
+                        
+            err = e.Insert(pengelola)
+            if err != nil { 
+                jsonhandler.SendJSON(w, "Database error", http.StatusNotFound)
+                log.Println("Failed insert pengelola ruangan: ", err)
+                return
+            }
+        }
+
+        if user.Class == "Mahasiswa"{
+            var mhs mahasiswa.Mahasiswa
+
+            if r.FormValue("nama") != "" {
+                mhs.Nama = r.FormValue("nama")
+            }
+            if r.FormValue("departemen") != "" {
+                mhs.Departemen = r.FormValue("departemen")
+            }
+            if r.FormValue("nim") != "" {
+                mhs.NIM = r.FormValue("nim")
+            }
+            mhs.IdUser = currentId
+
+            e := session.DB("ccs").C("mahasiswa")
+                        
+            err = e.Insert(mhs)
+            if err != nil { 
+                jsonhandler.SendJSON(w, "Database error", http.StatusNotFound)
+                log.Println("Failed insert mahasiswa: ", err)
+                return
+            }
+
         }
 
         w.Header().Set("Content-Type", "application/json")

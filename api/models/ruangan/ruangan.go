@@ -31,7 +31,7 @@ func EnsureRuangan(s *mgo.Session) {
     c := session.DB("ccs").C("ruangan")
 
     index := mgo.Index{
-        Key:        []string{"namaruangan"},
+        Key:        []string{"idruangan"},
         Unique:     true,
         DropDups:   true,
         Background: true,
@@ -140,4 +140,3 @@ func GetRuangan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
     }
 }
-
