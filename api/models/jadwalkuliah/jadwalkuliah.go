@@ -77,10 +77,10 @@ func AddJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.Request
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastJadwalKuliah.IdJadwalKuliah)
+            lastId,err = lastJadwalKuliah.IdJadwalKuliah
         }
         currentId := lastId + 1
-        jadwalkuliah.IdJadwalKuliah = strconv.Itoa(currentId)
+        jadwalkuliah.IdJadwalKuliah = currentId
 
         err = c.Insert(jadwalkuliah)
         if err != nil {

@@ -94,10 +94,10 @@ func AddMataKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) 
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastMataKuliah.IdMataKuliah)
+            lastId,err = lastMataKuliah.IdMataKuliah
         }
         currentId := lastId + 1
-        matakuliah.IdMataKuliah = strconv.Itoa(currentId)
+        matakuliah.IdMataKuliah = currentId
 
         err = c.Insert(matakuliah)
         if err != nil {

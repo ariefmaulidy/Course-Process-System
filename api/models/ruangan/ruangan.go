@@ -92,10 +92,10 @@ func AddRuangan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastRuangan.IdRuangan)
+            lastId,err = lastRuangan.IdRuangan
         }
         currentId := lastId + 1
-        ruangan.IdRuangan = strconv.Itoa(currentId)
+        ruangan.IdRuangan = currentId
 
         err = c.Insert(ruangan)
         if err != nil {

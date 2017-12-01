@@ -76,10 +76,10 @@ func AddPesananRuangan(s *mgo.Session) func(w http.ResponseWriter, r *http.Reque
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastPesananRuangan.IdPesanan)
+            lastId,err = lastPesananRuangan.IdPesanan
         }
         currentId := lastId + 1
-        pesananruangan.IdPesanan = strconv.Itoa(currentId)
+        pesananruangan.IdPesanan = currentId
 
         err = c.Insert(pesananruangan)
         if err != nil {

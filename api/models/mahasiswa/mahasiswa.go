@@ -93,10 +93,10 @@ func AddMahasiswa(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastMahasiswa.IdMahasiswa)
+            lastId,err = lastMahasiswa.IdMahasiswa
         }
         currentId := lastId + 1
-        mahasiswa.IdMahasiswa = strconv.Itoa(currentId)
+        mahasiswa.IdMahasiswa = currentId
 
         err = c.Insert(mahasiswa)
         if err != nil {

@@ -76,10 +76,10 @@ func AddTataUsaha(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastTataUsaha.IdTU)
+            lastId,err = lastTataUsaha.IdTU
         }
         currentId := lastId + 1
-        tatausaha.IdTU = strconv.Itoa(currentId)
+        tatausaha.IdTU = currentId
 
 
         err = c.Insert(tatausaha)

@@ -71,10 +71,10 @@ func AddPengelolaRuangan(s *mgo.Session) func(w http.ResponseWriter, r *http.Req
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastPengelolaRuangan.IdPengelolaRuangan)
+            lastId,err = lastPengelolaRuangan.IdPengelolaRuangan
         }
         currentId := lastId + 1
-        pengelolaruangan.IdPengelolaRuangan = strconv.Itoa(currentId)
+        pengelolaruangan.IdPengelolaRuangan = currentId
 
         err = c.Insert(pengelolaruangan)
         if err != nil {

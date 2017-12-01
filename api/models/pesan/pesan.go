@@ -70,10 +70,10 @@ func AddPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = strconv.Atoi(lastPesan.IdPesan)
+            lastId,err = lastPesan.IdPesan
         }
         currentId := lastId + 1
-        pesan.IdPesan = strconv.Itoa(currentId)
+        pesan.IdPesan = currentId
 
         err = c.Insert(pesan)
         if err != nil {
