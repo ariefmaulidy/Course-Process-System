@@ -7,13 +7,20 @@ import (
     "github.com/rs/cors"
     "log"
 
-    "./models/users"
-    "./models/lapak"
-    "./models/order"
-    "./models/recentbid"
-    "./socket"
-    "./searchengine"
-    "./models/admin"
+    "./models/bap"
+    "./models/chatgroupdiscussion"
+    "./models/dosen"
+    "./models/jadwalkuliah"
+    "./models/mahasiswa"
+    "./models/matakuliah"
+    "./models/pengajar"
+    "./models/pengelolaruangan"
+    "./models/pesan"
+    "./models/pesananruangan"
+    "./models/pesertakuliah"
+    "./models/ruangan"
+    "./models/tatausaha"
+    "./models/user"
 )
 
 func main() {
@@ -28,13 +35,20 @@ func main() {
 
     mux := goji.NewMux()
     
-    users.RoutesUser(mux,session)
-    lapak.RoutesLapak(mux,session)
-    order.RoutesOrder(mux,session)
-    recentbid.RoutesRecentBid(mux,session)
-    searchengine.RoutesSearchEngine(mux,session)
-    socket.RoutesSocket(mux,session)
-    admin.RoutesAdmin(mux,session)
+    bap.RoutesBAP(mux,session)
+    chatgroupdiscussion.RoutesChatGroupDiscussion(mux,session)
+    dosen.RoutesDosen(mux,session)
+    jadwalkuliah.RoutesJadwalKuliah(mux,session)
+    mahasiswa.RoutesMahasiswa(mux,session)
+    matakuliah.RoutesMataKuliah(mux,session)
+    pengajar.RoutesPengajar(mux,session)
+    pengelolaruangan.RoutesPengelolaRuangan(mux,session)
+    pesan.RoutesPesan(mux,session)
+    pesananruangan.RoutesPesananRuangan(mux,session)
+    pesertakuliah.RoutesPesertaKuliah(mux,session)
+    ruangan.RoutesRuangan(mux,session)
+    tatausaha.RoutesTataUsaha(mux,session)
+    user.RoutesUser(mux,session)
     handler := cors.New(cors.Options{AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"}, AllowCredentials:true,}).Handler(mux)
     log.Println("Starting Listen server....")
     http.ListenAndServe("localhost:8080", handler)
@@ -43,9 +57,6 @@ func main() {
 func ensureIndex(s *mgo.Session) {
     session := s.Copy()
     defer session.Close()
-
-    users.EnsureUser(session)
-    lapak.EnsureLapak(session)
-    order.EnsureOrder(session)
-    recentbid.EnsureRecentBid(session)
+    user.EnsureUser(session)
+    matakuliah.EnsureMataKuliah(session)
 }

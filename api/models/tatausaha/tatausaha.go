@@ -1,13 +1,13 @@
 package tatausaha
 
 import (
-
-
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
     "../mahasiswa"
+    "../jadwalkuliah"
+    "../pesananruangan"
     "../../auth"
     "../../jsonhandler"
 )
@@ -27,6 +27,7 @@ func RoutesTataUsaha(mux *goji.Mux, session *mgo.Session) {
     //untuk memasukkan BAP cek di fungsi AddBAP di model bap
     mux.HandleFunc(pat.Put("/assignpjkelas"), auth.Validate(AssignPJKelas(session)))
     //untuk book ruangan cek di fungsi menambahPesananRuangan  di model pesanan ruangan
+    mux.HandleFunc(pat.Get("/listbookruangan/:tanggal"), auth.Validate(GetListRuanganBook(session)))
 }
 
 func AllTataUsaha(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
@@ -135,30 +136,79 @@ func AssignPJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
             return
         }		
 
-        IdJadwalKuliah := pat.Param(r, "idjadwalkuliah")
+        if claims.Class == "TataUsaha"{
+            IdJadwalKuliah := pat.Param(r, "idjadwalkuliah")
+
+            session := s.Copy()
+            defer session.Close()
+
+            r.ParseMultipartForm(500000)
+            nim := r.FormValue("nim")
+
+            c := session.DB("ccs").C("mahasiswa")
+            d := session.DB("ccs").C("jadwalkuliah")
+
+            var mahasiswa Mahasiswa
+            err := c.Find(bson.M{"nim": nim}).One(&mahasiswa)
+            if err != nil {
+                jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+                log.Println("Failed find mahasiswa: ", err)
+                return
+            }
+
+            c.Update(bson.M{"nim" : nim}, bson.M{"$set": bson.M{"status": "pjkelas"}})
+            d.Update(bson.M{"idjadwalkuliah": IdJadwalKuliah}, bson.M{"$set": bson.M{"idpj": mahasiswa.IdPJ}})
+
+            w.WriteHeader(http.StatusNoContent)
+        }
+	}
+}
+
+func GetListRuanganBook(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        claims, ok := r.Context().Value(auth.MyKey).(auth.Claims)
+        if !ok {
+            http.NotFound(w, r)
+            return
+        }
 
         session := s.Copy()
-		defer session.Close()
+        defer session.Close()
+        
+        Tanggal := pat.Param(r, "tanggal")
+        
+        var hari string
+        var jadwal []jadwalkuliah.JadwalKuliah
+        var pesanan []pesananruangan.PesananRuangan
 
-		r.ParseMultipartForm(500000)
-        nim := r.FormValue("nim")
+        hari := Tanggal.Weekday().String()
 
-        c := session.DB("ccs").C("mahasiswa")
-        d := session.DB("ccs").C("jadwalkuliah")
+        c := session.DB("ccs").C("jadwalkuliah")
+        d := session.DB("css").C("pesananruangan")
 
-        var mahasiswa Mahasiswa
-        err := c.Find(bson.M{"nim": nim}).One(&mahasiswa)
+        err := c.Find(bson.M{"hari": hari}).All(&jadwal).Sort("idruangan","waktumulai")
         if err != nil {
             jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
             log.Println("Failed find mahasiswa: ", err)
             return
         }
 
-        c.Update(bson.M{"nim" : nim}, bson.M{"$set": bson.M{"status": "pjkelas"}})
-        d.Update(bson.M{"idjadwalkuliah": IdJadwalKuliah}, bson.M{"$set": bson.M{"idpj": mahasiswa.IdPJ}})
+        err = d.Find(bson.M{"tanggal": tanggal}).All(&pesanan).Sort("idruangan","waktumulai")
+        if err != nil {
+            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+            log.Println("Failed find mahasiswa: ", err)
+            return
+        }
 
-        w.WriteHeader(http.StatusNoContent)
-	}
+        respBody, err := json.MarshalIndent(DataSend{Jadwal:jadwal,Pesanan:pesanan}, "", "  ")
+        if err != nil {
+          log.Fatal(err)
+        }
+        jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
+        return
+    }
 }
+
+
 
 

@@ -18,7 +18,9 @@ type JadwalKuliah struct {
     IdPJ            int         `json:"idpj"`
 	IdMataKuliah	int	      	`json:"idmatakuliah"`
     IdRuangan       int         `json:"idruangan"`
-	Waktu		    time.Time   `json:"waktu"`
+    WaktuMulai		time.Time   `json:"waktumulai"`
+    WaktuSelesai    time.Time   `json:"waktuselesai"`
+    Hari            string      `json:"hari"`
 }
 
 func RoutesJadwalKuliah(mux *goji.Mux, session *mgo.Session) {
