@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "log"
     "net/http"
+    "time"
 
 	"goji.io"
     "goji.io/pat"
@@ -22,6 +23,10 @@ type Tatausaha struct {
 	Departemen	string	`json:"departemen"`
 	Fakultas	string	`json:"fakultas"`
 }
+type DataSend struct{
+    Jadwal      []jadwalkuliah.JadwalKuliah     `json:"user"`
+    Pesanan     []pesananruangan.PesananRuangan `json:"lelang"`
+  }
 
 func RoutesTataUsaha(mux *goji.Mux, session *mgo.Session) {
 
@@ -175,41 +180,48 @@ func GetListRuanganBook(s *mgo.Session) func(w http.ResponseWriter, r *http.Requ
             http.NotFound(w, r)
             return
         }
-
-        session := s.Copy()
-        defer session.Close()
-        
-        Tanggal := pat.Param(r, "tanggal")
-        
-        var hari string
-        var jadwal []jadwalkuliah.JadwalKuliah
-        var pesanan []pesananruangan.PesananRuangan
-
-        hari = Tanggal.Weekday().String()
-
-        c := session.DB("ccs").C("jadwalkuliah")
-        d := session.DB("css").C("pesananruangan")
-
-        err := c.Find(bson.M{"hari": hari}).All(&jadwal).Sort("idruangan","waktumulai")
-        if err != nil {
-            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
-            log.Println("Failed find mahasiswa: ", err)
+        if claims.Class == "Tata Usaha"{
+            session := s.Copy()
+            defer session.Close()
+            
+            Tanggal := pat.Param(r, "tanggal")
+            
+            var hari string
+            var jadwal []jadwalkuliah.JadwalKuliah
+            var pesanan []pesananruangan.PesananRuangan
+    
+            layout := "2006-01-02T15:04:05.000Z"
+            Tgl,_ := time.Parse(layout,Tanggal)
+            hari = Tgl.Weekday().String()
+    
+            c := session.DB("ccs").C("jadwalkuliah")
+            d := session.DB("css").C("pesananruangan")
+    
+            err := c.Find(bson.M{"hari": hari}).All(&jadwal)
+            if err != nil {
+                jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+                log.Println("Failed find mahasiswa: ", err)
+                return
+            }
+    
+            err = d.Find(bson.M{"tanggal": Tanggal}).All(&pesanan)
+            if err != nil {
+                jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+                log.Println("Failed find mahasiswa: ", err)
+                return
+            }
+    
+            respBody, err := json.MarshalIndent(DataSend{Jadwal:jadwal,Pesanan:pesanan}, "", "  ")
+            if err != nil {
+              log.Fatal(err)
+            }
+            jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
+            return
+        }else{
+            jsonhandler.SendWithJSON(w, "you dont have permission", http.StatusNotFound)
             return
         }
-
-        err = d.Find(bson.M{"tanggal": tanggal}).All(&pesanan).Sort("idruangan","waktumulai")
-        if err != nil {
-            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
-            log.Println("Failed find mahasiswa: ", err)
-            return
-        }
-
-        respBody, err := json.MarshalIndent(DataSend{Jadwal:jadwal,Pesanan:pesanan}, "", "  ")
-        if err != nil {
-          log.Fatal(err)
-        }
-        jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
-        return
+        
     }
 }
 

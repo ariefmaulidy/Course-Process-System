@@ -5,8 +5,8 @@ import (
     "log"
     "time"
     "net/http"
-    "strconv"
     "fmt"
+    "crypto/sha256"
 
 	"goji.io"
     "goji.io/pat"
@@ -28,7 +28,7 @@ type User struct {
 }
 
 func RoutesUser(mux *goji.Mux, session *mgo.Session) {
-    mux.HandleFunc(pat.Get("/user"), AllUser(session)) //untuk retrieve smua yang di db
+    mux.HandleFunc(pat.Get("/user"), AllUsers(session)) //untuk retrieve smua yang di db
     mux.HandleFunc(pat.Post("/register"), Register(session))
     mux.HandleFunc(pat.Post("/login"), Login(session)) // login
     mux.HandleFunc(pat.Get("/checkexpiredtoken"), auth.CheckExpiredToken(session))
@@ -65,7 +65,7 @@ func AllUsers(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         var users []User
         err := c.Find(bson.M{}).All(&users)
         if err != nil {
-            jsonhandler.SendJSON(w, "Database error", http.StatusInternalServerError)
+            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
             log.Println("Failed get all users: ", err)
             return
         }
@@ -94,7 +94,9 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if r.FormValue("class") != ""{
             user.Class = r.FormValue("class")
         }
-        
+        if r.FormValue("password") != ""{
+            user.Password = r.FormValue("password")
+        }
 
         c := session.DB("ccs").C("user")
 
@@ -102,7 +104,7 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         var lastUser User
         var lastId  int
 
-        err = c.Find(nil).Sort("-$natural").Limit(1).One(&lastUser)
+        err := c.Find(nil).Sort("-$natural").Limit(1).One(&lastUser)
         if err != nil {
             lastId = 0
         } else {
@@ -111,23 +113,23 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         currentId := lastId + 1
         user.IdUser = currentId
 
-        passEncrypt := sha256.Sum256([]byte(varmap["Password"]))
+        passEncrypt := sha256.Sum256([]byte(user.Password))
         user.Password = fmt.Sprintf("%x", passEncrypt)
 
         err = c.Insert(user)
         if err != nil {
             if mgo.IsDup(err) {
-                jsonhandler.SendJSON(w, "duplicate", http.StatusOK)
+                jsonhandler.SendWithJSON(w, "duplicate", http.StatusOK)
                 return
             }
 
-            jsonhandler.SendJSON(w, "Database error", http.StatusNotFound)
+            jsonhandler.SendWithJSON(w, "Database error", http.StatusNotFound)
             log.Println("Failed insert user: ", err)
             return
         }
 
         if user.Class == "TataUsaha"{
-            var tu tatausaha.TataUsaha
+            var tu tatausaha.Tatausaha
 
             if r.FormValue("nama") != "" {
                 tu.Nama = r.FormValue("nama")
@@ -144,7 +146,7 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
             
             err = d.Insert(tu)
             if err != nil { 
-                jsonhandler.SendJSON(w, "Database error", http.StatusNotFound)
+                jsonhandler.SendWithJSON(w, "Database error", http.StatusNotFound)
                 log.Println("Failed insert tata usaha: ", err)
                 return
             }
@@ -171,7 +173,7 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
             
             err = e.Insert(dos)
             if err != nil { 
-                jsonhandler.SendJSON(w, "Database error", http.StatusNotFound)
+                jsonhandler.SendWithJSON(w, "Database error", http.StatusNotFound)
                 log.Println("Failed insert dosen: ", err)
                 return
             }
@@ -189,7 +191,7 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
                         
             err = e.Insert(pengelola)
             if err != nil { 
-                jsonhandler.SendJSON(w, "Database error", http.StatusNotFound)
+                jsonhandler.SendWithJSON(w, "Database error", http.StatusNotFound)
                 log.Println("Failed insert pengelola ruangan: ", err)
                 return
             }
@@ -213,7 +215,7 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
                         
             err = e.Insert(mhs)
             if err != nil { 
-                jsonhandler.SendJSON(w, "Database error", http.StatusNotFound)
+                jsonhandler.SendWithJSON(w, "Database error", http.StatusNotFound)
                 log.Println("Failed insert mahasiswa: ", err)
                 return
             }
@@ -226,7 +228,7 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-func login(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+func Login(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
         session := s.Copy()
         defer session.Close()
@@ -235,7 +237,7 @@ func login(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         decoder := json.NewDecoder(r.Body)
         err := decoder.Decode(&user)
         if err != nil {
-            jsonhandler.SendJSON(w, "Incorrect body", http.StatusBadRequest)
+            jsonhandler.SendWithJSON(w, "Incorrect body", http.StatusBadRequest)
             return
         }
 
@@ -265,7 +267,7 @@ func logout(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 
     deleteCookie := http.Cookie{Name: "Auth", Value: "none", Expires: time.Now()}
     http.SetCookie(w, &deleteCookie)
-    jsonhandler.SendJSON(w, "logout", http.StatusOK);
+    jsonhandler.SendWithJSON(w, "logout", http.StatusOK);
     return
   }
 }
