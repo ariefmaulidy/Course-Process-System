@@ -1,0 +1,34 @@
+.sidebarservices {
+  width: 100%;
+
+
+}
+.sidebarservices .head {
+  text-align:center;
+  font-size:15pt;
+  background:gray;
+  color:white;
+}
+.head:hover {
+  background:gray !important;
+  cursor: initial;
+}
+.sidebarservices li {
+  list-style:none; 
+  background-color:#0e6eb7; 
+  margin:10px 10px;
+  text-align:left; 
+  padding: 10px 0 10px 20px;
+  border-radius:5px 5px;
+  cursor:pointer;
+  }
+.sidebarservices li a {
+  text-decoration:none; 
+  color:white !important;
+  font-family: roboto;
+  }
+  .sidebarservices li:hover {
+    background:#0e1a35;
+    color:#0e1a35;
+  }
+
