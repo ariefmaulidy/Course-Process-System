@@ -97,21 +97,17 @@ func GetRoomCGD(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 				        log.Println("Failed find pesan: ", err)
 				        return
 				    }
-				    if pesan.IdPesan == "" {
-				        jsonhandler.SendWithJSON(w, "pesan not found", http.StatusNotFound)
-				        return
-				    }	
-
 
 				    for _,message := range pesan {
 				    	if message.ClassPengirim == "TataUsaha"{
-				    		var pengirim tatausaha.TataUsaha
+				    		var pengirim tatausaha.Tatausaha
 				    		err := cTu.Find(bson.M{"iduser": message.IdPengirim}).One(&pengirim)
 					        if err != nil {
 					            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
 					            log.Println("Failed find tatausaha: ", err)
 					            return
 					        }
+					        datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim})
 				    	}
 				    	if message.ClassPengirim == "Dosen"{
 				    		var pengirim dosen.Dosen
@@ -121,18 +117,18 @@ func GetRoomCGD(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 					            log.Println("Failed find dosen: ", err)
 					            return
 					        }
+					        datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim})
 				    	}
 				    	if message.ClassPengirim == "Mahasiswa"{
 				    		var pengirim mahasiswa.Mahasiswa
-				    		err := cTu.Find(bson.M{"iduser": message.IdPengirim}).One(&pengirim)
+				    		err := cMahasiswa.Find(bson.M{"iduser": message.IdPengirim}).One(&pengirim)
 					        if err != nil {
 					            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
 					            log.Println("Failed find mahasiswa: ", err)
 					            return
 					        }
+					        datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim})
 				    	}
-
-				    	datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim})
 					}
 
 					conn.WriteJSON(datasend)

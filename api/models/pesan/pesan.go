@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "log"
     "net/http"
+    "strconv"
 
 	"goji.io"
     "goji.io/pat"
@@ -70,7 +71,9 @@ func AddPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
             return
         }
 
-        IdCGD := pat.Param(r, "idcgd")
+        var IdCGD int
+
+        IdCGD,err = strconv.Atoi(pat.Param(r, "idcgd"))
 
         c := session.DB("ccs").C("pesan")
 
