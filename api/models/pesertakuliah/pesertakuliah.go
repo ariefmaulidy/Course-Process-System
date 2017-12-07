@@ -1,13 +1,15 @@
 package pesertakuliah
 
 import (
+    "encoding/json"
+    "log"
+    "net/http"
 
 
     "goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
-    "../../auth"
     "../../jsonhandler"
 )
 
@@ -72,7 +74,7 @@ func AddPesertaKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.Reques
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = lastPesertaKuliah.IdPesertaKuliah
+            lastId = lastPesertaKuliah.IdPesertaKuliah
         }
         currentId := lastId + 1
         pesertakuliah.IdPesertaKuliah = currentId
@@ -90,7 +92,6 @@ func AddPesertaKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.Reques
         }
 
         w.Header().Set("Content-Type", "application/json")
-        w.Header().Set("Location", r.URL.Path+"/"+pesertakuliah.NIM)
         w.WriteHeader(http.StatusCreated)
     }
 }

@@ -1,13 +1,14 @@
 package matakuliah
 
 import (
-
+    "encoding/json"
+    "log"
+    "net/http"
 
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
-    "../../auth"
     "../../jsonhandler"
 )
 
@@ -94,7 +95,7 @@ func AddMataKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) 
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = lastMataKuliah.IdMataKuliah
+            lastId =lastMataKuliah.IdMataKuliah
         }
         currentId := lastId + 1
         matakuliah.IdMataKuliah = currentId

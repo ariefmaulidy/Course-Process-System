@@ -1,13 +1,14 @@
 package pesan
 
 import (
-
+    "encoding/json"
+    "log"
+    "net/http"
 
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
-    "../../auth"
     "../../jsonhandler"
 )
 
@@ -70,7 +71,7 @@ func AddPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = lastPesan.IdPesan
+            lastId = lastPesan.IdPesan
         }
         currentId := lastId + 1
         pesan.IdPesan = currentId
@@ -88,12 +89,11 @@ func AddPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         }
 
         w.Header().Set("Content-Type", "application/json")
-        w.Header().Set("Location", r.URL.Path+"/"+pesan.IdPesan)
         w.WriteHeader(http.StatusCreated)
     }
 }
 
-func GetPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+func GetAttributePesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
         session := s.Copy()
         defer session.Close()

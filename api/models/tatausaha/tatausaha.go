@@ -1,6 +1,10 @@
 package tatausaha
 
 import (
+    "encoding/json"
+    "log"
+    "net/http"
+
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
@@ -77,10 +81,10 @@ func AddTataUsaha(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = lastTataUsaha.IdTU
+            lastId = lastTataUsaha.IdUser
         }
         currentId := lastId + 1
-        tatausaha.IdTU = currentId
+        tatausaha.IdUser = currentId
 
 
         err = c.Insert(tatausaha)
@@ -148,7 +152,7 @@ func AssignPJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
             c := session.DB("ccs").C("mahasiswa")
             d := session.DB("ccs").C("jadwalkuliah")
 
-            var mahasiswa Mahasiswa
+            var mahasiswa mahasiswa.Mahasiswa
             err := c.Find(bson.M{"nim": nim}).One(&mahasiswa)
             if err != nil {
                 jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
@@ -157,7 +161,7 @@ func AssignPJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
             }
 
             c.Update(bson.M{"nim" : nim}, bson.M{"$set": bson.M{"status": "pjkelas"}})
-            d.Update(bson.M{"idjadwalkuliah": IdJadwalKuliah}, bson.M{"$set": bson.M{"idpj": mahasiswa.IdPJ}})
+            d.Update(bson.M{"idjadwalkuliah": IdJadwalKuliah}, bson.M{"$set": bson.M{"idmahasiswa": mahasiswa.IdMahasiswa}})
 
             w.WriteHeader(http.StatusNoContent)
         }
@@ -181,7 +185,7 @@ func GetListRuanganBook(s *mgo.Session) func(w http.ResponseWriter, r *http.Requ
         var jadwal []jadwalkuliah.JadwalKuliah
         var pesanan []pesananruangan.PesananRuangan
 
-        hari := Tanggal.Weekday().String()
+        hari = Tanggal.Weekday().String()
 
         c := session.DB("ccs").C("jadwalkuliah")
         d := session.DB("css").C("pesananruangan")

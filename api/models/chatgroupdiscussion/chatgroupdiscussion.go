@@ -1,13 +1,14 @@
 package chatgroupdiscussion
 
 import (
-
+     "encoding/json"
+    "log"
+    "net/http"
 
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
-    "../../auth"
     "../../jsonhandler"
 )
 
@@ -85,7 +86,6 @@ func AddChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *http.
         }
 
         w.Header().Set("Content-Type", "application/json")
-        w.Header().Set("Location", r.URL.Path+"/"+chatgroupdiscussion.IdCGD)
         w.WriteHeader(http.StatusCreated)
     }
 }

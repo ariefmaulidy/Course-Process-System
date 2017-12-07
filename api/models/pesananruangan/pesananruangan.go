@@ -1,13 +1,15 @@
 package pesananruangan
 
 import (
-
+    "encoding/json"
+    "log"
+    "time"
+    "net/http"
 
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
-    "../../auth"
     "../../jsonhandler"
 )
 
@@ -78,7 +80,7 @@ func AddPesananRuangan(s *mgo.Session) func(w http.ResponseWriter, r *http.Reque
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = lastPesananRuangan.IdPesanan
+            lastId = lastPesananRuangan.IdPesanan
         }
         currentId := lastId + 1
         pesananruangan.IdPesanan = currentId
@@ -96,12 +98,11 @@ func AddPesananRuangan(s *mgo.Session) func(w http.ResponseWriter, r *http.Reque
         }
 
         w.Header().Set("Content-Type", "application/json")
-        w.Header().Set("Location", r.URL.Path+"/"+pesananruangan.idPesanan)
         w.WriteHeader(http.StatusCreated)
     }
 }
 
-func GetPesananRuangan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+func GetAttributePesananRuangan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
         session := s.Copy()
         defer session.Close()

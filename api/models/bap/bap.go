@@ -5,7 +5,6 @@ import (
     "log"
     "time"
     "net/http"
-    "strconv"
     
 	"goji.io"
     "goji.io/pat"
@@ -86,7 +85,7 @@ func AddBAP(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = lastBAP.IdBAP
+            lastId = lastBAP.IdBAP
         }
         currentId := lastId + 1
         bap.IdBAP = currentId
@@ -105,7 +104,6 @@ func AddBAP(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         }
 
         w.Header().Set("Content-Type", "application/json")
-        w.Header().Set("Location", r.URL.Path+"/"+bap.IdBAP)
         w.WriteHeader(http.StatusCreated)
     }
 }
@@ -179,7 +177,7 @@ func EditBAP(s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
         if err != nil {
             switch err {
             default:
-                jsonhandler.ErrorWithJSON(w, "Database error", http.StatusInternalServerError)
+                jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
                 log.Println("Failed update BAP: ", err)
                 jsonhandler.SendWithJSON(w, "Gagal mengupdate BAP", http.StatusOK)
                 return

@@ -1,7 +1,10 @@
 package jadwalkuliah
 
 import (
-
+    "encoding/json"
+    "log"
+    "time"
+    "net/http"
 
 	"goji.io"
     "goji.io/pat"
@@ -79,7 +82,7 @@ func AddJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.Request
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = lastJadwalKuliah.IdJadwalKuliah
+            lastId = lastJadwalKuliah.IdJadwalKuliah
         }
         currentId := lastId + 1
         jadwalkuliah.IdJadwalKuliah = currentId
@@ -97,7 +100,6 @@ func AddJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.Request
         }
 
         w.Header().Set("Content-Type", "application/json")
-        w.Header().Set("Location", r.URL.Path+"/"+jadwalkuliah.IdJadwalKuliah)
         w.WriteHeader(http.StatusCreated)
     }
 }
@@ -154,14 +156,14 @@ func GetDetailJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.R
             return
         }
 
-        err := c.Find(bson.M{"idruangan": jadwalkuliah.IdRuangan}).One(&datasend.DataRuangan)
+        err = d.Find(bson.M{"idruangan": datasend.DataJadwalKuliah.IdRuangan}).One(&datasend.DataRuangan)
         if err != nil {
             jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
             log.Println("Failed find dataruangan: ", err)
             return
         }
 
-        err := c.Find(bson.M{"idjadwalkuliah": IdJadwalKuliah}).All(&datasend.DataPesertaKuliah)
+        err = e.Find(bson.M{"idjadwalkuliah": IdJadwalKuliah}).All(&datasend.DataPesertaKuliah)
         if err != nil {
             jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
             log.Println("Failed find datapesertakuliah: ", err)

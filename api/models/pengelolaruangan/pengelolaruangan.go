@@ -1,13 +1,17 @@
 package pengelolaruangan
 
 import (
+    "encoding/json"
+    "log"
+    "net/http"
+
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
     "../../auth"
     "../../jsonhandler"
-    "../pesananruangan"
+
 )
 
 type PengelolaRuangan struct {
@@ -71,10 +75,10 @@ func AddPengelolaRuangan(s *mgo.Session) func(w http.ResponseWriter, r *http.Req
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = lastPengelolaRuangan.IdPengelolaRuangan
+            lastId = lastPengelolaRuangan.IdUser
         }
         currentId := lastId + 1
-        pengelolaruangan.IdPengelolaRuangan = currentId
+        pengelolaruangan.IdUser = currentId
 
         err = c.Insert(pengelolaruangan)
         if err != nil {
@@ -89,7 +93,6 @@ func AddPengelolaRuangan(s *mgo.Session) func(w http.ResponseWriter, r *http.Req
         }
 
         w.Header().Set("Content-Type", "application/json")
-        w.Header().Set("Location", r.URL.Path+"/"+pengelolaruangan.IdPengelolaRuangan)
         w.WriteHeader(http.StatusCreated)
     }
 }
@@ -128,14 +131,18 @@ func PersetujuanPesanan(s *mgo.Session) func(w http.ResponseWriter,r *http.Reque
           return
         }
 
-        session := s.Copy()
-        defer session.Close()
+        if claims.Class == "PengelolaRuangan"{
+            session := s.Copy()
+            defer session.Close()
 
-        IdPesanan = pat.Param(r,"idpesanan")
+            IdPesanan := pat.Param(r,"idpesanan")
 
-        c := session.DB("ccs").C("pesananruangan")
-        c.Update(bson.M{"idpesanan": IdPesanan}, bson.M{"$set": bson.M{"status": "Disetujui","confirmedby":claims.IdUser}})
-        w.WriteHeader(http.StatusNoContent)
+            c := session.DB("ccs").C("pesananruangan")
+            c.Update(bson.M{"idpesanan": IdPesanan}, bson.M{"$set": bson.M{"status": "Disetujui","confirmedby":claims.IdUser}})
+            w.WriteHeader(http.StatusNoContent)
+        } else {
+            return
+        }
     }
 }
 
@@ -147,13 +154,17 @@ func PenolakanPesanan(s *mgo.Session) func(w http.ResponseWriter,r *http.Request
           return
         }
         
-        session := s.Copy()
-        defer session.Close()
+        if claims.Class == "PengelolaRuangan"{
+            session := s.Copy()
+            defer session.Close()
 
-        IdPesanan = pat.Param(r,"idpesanan")
+            IdPesanan := pat.Param(r,"idpesanan")
 
-        c := session.DB("ccs").C("pesananruangan")
-        c.Update(bson.M{"idpesanan": IdPesanan}, bson.M{"$set": bson.M{"status": "Ditolak"}})
-        w.WriteHeader(http.StatusNoContent)
+            c := session.DB("ccs").C("pesananruangan")
+            c.Update(bson.M{"idpesanan": IdPesanan}, bson.M{"$set": bson.M{"status": "Ditolak"}})
+            w.WriteHeader(http.StatusNoContent)
+        } else {
+            return
+        }
     }
 }

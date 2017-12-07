@@ -1,6 +1,11 @@
 package pengajar
 
 import (
+    "encoding/json"
+    "log"
+    "time"
+    "net/http"
+
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
@@ -8,8 +13,8 @@ import (
     "../../auth"
     "../../jsonhandler"
     "../matakuliah"
-    "../jadwalkuliah"
     "../ruangan"
+    "../jadwalkuliah"
 )
 
 type Pengajar struct {
@@ -54,7 +59,7 @@ func AddPengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         session := s.Copy()
         defer session.Close()
 
-        var pengajar pengajar
+        var pengajar Pengajar
         decoder := json.NewDecoder(r.Body)
         err := decoder.Decode(&pengajar)
         if err != nil {
@@ -65,17 +70,17 @@ func AddPengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         c := session.DB("ccs").C("pengajar")
 
         //untuk auto increment
-        var lastpengajar pengajar
+        var lastpengajar Pengajar
         var lastId  int
 
         err = c.Find(nil).Sort("-$natural").Limit(1).One(&lastpengajar)
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = lastpengajar.Idpengajar
+            lastId = lastpengajar.IdPengajar
         }
         currentId := lastId + 1
-        pengajar.Idpengajar = currentId
+        pengajar.IdPengajar = currentId
 
         err = c.Insert(pengajar)
         if err != nil {
@@ -90,7 +95,6 @@ func AddPengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         }
 
         w.Header().Set("Content-Type", "application/json")
-        w.Header().Set("Location", r.URL.Path+"/"+pengajar.Idpengajar)
         w.WriteHeader(http.StatusCreated)
     }
 }
@@ -104,7 +108,7 @@ func GetAttributePengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Re
 
         c := session.DB("ccs").C("pengajar")
 
-        var pengajar pengajar
+        var pengajar Pengajar
         err := c.Find(bson.M{"idpengajar": IdPengajar}).One(&pengajar)
         if err != nil {
             jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
@@ -119,9 +123,10 @@ func GetAttributePengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Re
 
         jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
 	}
+}
 
 func JadwalMengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.request){
+	return func(w http.ResponseWriter, r *http.Request){
 		claims, ok := r.Context().Value(auth.MyKey).(auth.Claims)
         if !ok {
           http.NotFound(w, r)
@@ -132,18 +137,19 @@ func JadwalMengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request)
 			session := s.Copy()
 			defer session.Close()
 	
-			IdUser = claims.IdUser
+			IdUser := claims.IdUser
 
 			c := session.DB("css").C("pengajar")
 
-			var pengajar Pengajar
+			var pengajar []Pengajar
 
 			type jadwalfix struct{
-				MataKuliah 	string      `json:"matakuliah"`
-				Waktu		time.Time   `json:"waktu"`
-				Ruangan		string      `json:"ruangan"`
+				MataKuliah 	 string      `json:"matakuliah"`
+				WaktuMulai	 time.Time   `json:"waktumulai"`
+                WaktuSelesai time.Time   `json:"waktuselesai"`
+				Ruangan		 string      `json:"ruangan"`
             }
-            var realjadwal := []jadwalfix{}
+            realjadwal := []jadwalfix{}
             err := c.Find(bson.M{"iduser": IdUser}).One(&pengajar)
             
             if err != nil{
@@ -158,7 +164,7 @@ func JadwalMengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request)
                 err := a.Find(bson.M{"idmatakuliah":element.IdMataKuliah}).One(&matkul) 
 
                 d := session.DB("css").C("jadwalkuliah")
-                var jadwal []jadwal.JadwalKuliah
+                var jadwal []jadwalkuliah.JadwalKuliah
                 err = d.Find(bson.M{"idmatakuliah":element.IdMataKuliah}).All(&jadwal)
                 
                 if err != nil{
@@ -170,8 +176,8 @@ func JadwalMengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request)
                 for _,element2 := range jadwal{
                     e := session.DB("css").C("ruangan")
                     var ruangan ruangan.Ruangan
-                    err := e.Find(bson.M{"idruangan":element2.IdRuangan}).One(&ruangan)
-                    j := jadwalfix{MataKuliah:matkul.NamaMataKuliah, Waktu:jadwal.Waktu, Ruangan:ruangan.NamaRuangan }
+                    e.Find(bson.M{"idruangan":element2.IdRuangan}).One(&ruangan)
+                    j := jadwalfix{MataKuliah:matkul.NamaMataKuliah, WaktuMulai:element2.WaktuMulai,WaktuSelesai:element2.WaktuSelesai, Ruangan:ruangan.NamaRuangan }
                     realjadwal = append(realjadwal,j)
                 }
             }

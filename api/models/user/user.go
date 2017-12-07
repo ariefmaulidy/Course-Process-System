@@ -1,6 +1,13 @@
 package user
 
 import (
+    "encoding/json"
+    "log"
+    "time"
+    "net/http"
+    "strconv"
+    "fmt"
+
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"

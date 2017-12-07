@@ -1,15 +1,15 @@
 package dosen
 
 import (
-
+    "encoding/json"
+    "log"
+    "net/http"
 
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
-    "../../auth"
     "../../jsonhandler"
-    "../matakuliah"
 )
 
 type Dosen struct {
@@ -74,10 +74,10 @@ func AddDosen(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId = lastDosen.IdDosen
+            lastId = lastDosen.IdUser
         }
         currentId := lastId + 1
-        dosen.IdDosen = currentId
+        dosen.IdUser = currentId
 
         err = c.Insert(dosen)
         if err != nil {

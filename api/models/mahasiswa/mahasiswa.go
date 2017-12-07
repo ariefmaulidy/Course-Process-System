@@ -1,13 +1,14 @@
 package mahasiswa
 
 import (
-
+    "encoding/json"
+    "log"
+    "net/http"
 
 	"goji.io"
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
-    "../../auth"
     "../../jsonhandler"
 )
 
@@ -93,7 +94,7 @@ func AddMahasiswa(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             lastId = 0
         } else {
-            lastId,err = lastMahasiswa.IdMahasiswa
+            lastId = lastMahasiswa.IdMahasiswa
         }
         currentId := lastId + 1
         mahasiswa.IdMahasiswa = currentId
