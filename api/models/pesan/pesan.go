@@ -9,18 +9,21 @@ import (
     "goji.io/pat"
     "gopkg.in/mgo.v2"
     "gopkg.in/mgo.v2/bson"
+    "../../auth"
     "../../jsonhandler"
 )
 
 type Pesan struct {
 	IdPesan	        int			`json:"idpesan"`
 	IsiPesan	    string		`json:"isipesan"`
+    IdCGD           int         `json:"idcgd"`
+    IdPengirim      int         `json:"idpengirim"`
+    ClassPengirim   string      `json:"classpengirim"`
 }
 
 func RoutesPesan(mux *goji.Mux, session *mgo.Session) {
-
     mux.HandleFunc(pat.Get("/pesan"), AllPesan(session)) //untuk retrieve smua yang di db
-    mux.HandleFunc(pat.Post("/addpesan"), AddPesan(session))
+    mux.HandleFunc(pat.Post("/addpesan/:idcgd"), auth.Validate(AddPesan(session)))
     mux.HandleFunc(pat.Get("/pesan/:idpesan"), GetAttributePesan(session))
 }
 
@@ -50,6 +53,12 @@ func AllPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 
 func AddPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
+        claims, ok := r.Context().Value(auth.MyKey).(auth.Claims)
+        if !ok {
+            http.NotFound(w, r)
+            return
+        }   
+
         session := s.Copy()
         defer session.Close()
 
@@ -61,11 +70,13 @@ func AddPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
             return
         }
 
+        IdCGD := pat.Param(r, "idcgd")
+
         c := session.DB("ccs").C("pesan")
 
         //untuk auto increment
         var lastPesan Pesan
-        var lastId  int
+        var lastId int
 
         err = c.Find(nil).Sort("-$natural").Limit(1).One(&lastPesan)
         if err != nil {
@@ -75,6 +86,10 @@ func AddPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         }
         currentId := lastId + 1
         pesan.IdPesan = currentId
+
+        pesan.IdCGD = IdCGD
+        pesan.IdPengirim = claims.IdUser
+        pesan.ClassPengirim = claims.Class
 
         err = c.Insert(pesan)
         if err != nil {

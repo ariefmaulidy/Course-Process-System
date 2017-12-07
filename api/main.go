@@ -21,6 +21,7 @@ import (
     "./models/ruangan"
     "./models/tatausaha"
     "./models/user"
+    "./socket"
 )
 
 func main() {
@@ -49,6 +50,7 @@ func main() {
     ruangan.RoutesRuangan(mux,session)
     tatausaha.RoutesTataUsaha(mux,session)
     user.RoutesUser(mux,session)
+    socket.RoutesSocket(mux,session)
     handler := cors.New(cors.Options{AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"}, AllowCredentials:true,}).Handler(mux)
     log.Println("Starting Listen server....")
     http.ListenAndServe("localhost:8080", handler)

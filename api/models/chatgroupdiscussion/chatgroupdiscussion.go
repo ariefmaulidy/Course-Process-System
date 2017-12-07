@@ -15,8 +15,6 @@ import (
 type ChatGroupDiscussion struct {
 	IdCGD	        int			`json:"idcgd"`
 	IdMataKuliah	int		    `json:"idmatakuliah"`
-    IdPesan         int         `json:"idpesan"`
-    IdPengirim      int         `json:"idpengirim"`
 }
 
 func RoutesChatGroupDiscussion(mux *goji.Mux, session *mgo.Session) {
