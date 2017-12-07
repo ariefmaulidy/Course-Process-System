@@ -21,7 +21,7 @@ type Mahasiswa struct {
     Status          string      `json:"status"`
 }
 
-func RoutesMahasiwa(mux *goji.Mux, session *mgo.Session) {
+func RoutesMahasiswa(mux *goji.Mux, session *mgo.Session) {
 
     mux.HandleFunc(pat.Get("/mahasiswa"), AllMahasiswa(session)) //untuk retrieve smua yang di db
     mux.HandleFunc(pat.Post("/addmahasiswa"), AddMahasiswa(session))
