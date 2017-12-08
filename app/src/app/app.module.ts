@@ -11,6 +11,7 @@ import { JadwalkuliahComponent } from './jadwalkuliah/jadwalkuliah.component';
 import { AuthComponent } from './auth/auth.component';
 import { DetailjadwalComponent } from './detailjadwal/detailjadwal.component';
 import { ForumdiskusiComponent } from './forumdiskusi/forumdiskusi.component';
+import { RuanganComponent } from './ruangan/ruangan.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { ForumdiskusiComponent } from './forumdiskusi/forumdiskusi.component';
     JadwalkuliahComponent,
     AuthComponent,
     DetailjadwalComponent,
-    ForumdiskusiComponent
+    ForumdiskusiComponent,
+    RuanganComponent
   ],
   imports: [
     BrowserModule,
@@ -46,6 +48,10 @@ import { ForumdiskusiComponent } from './forumdiskusi/forumdiskusi.component';
       {
         path : 'forumdiskusi',
         component: ForumdiskusiComponent
+      },
+      {
+        path : 'ruangan',
+        component: RuanganComponent
       },
       {
         path : 'auth',
