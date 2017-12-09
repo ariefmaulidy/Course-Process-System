@@ -166,7 +166,7 @@ func AssignPJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
             }
 
             c.Update(bson.M{"nim" : nim}, bson.M{"$set": bson.M{"status": "pjkelas"}})
-            d.Update(bson.M{"idjadwalkuliah": IdJadwalKuliah}, bson.M{"$set": bson.M{"idmahasiswa": mahasiswa.IdMahasiswa}})
+            d.Update(bson.M{"idjadwalkuliah": IdJadwalKuliah}, bson.M{"$set": bson.M{"idpj": mahasiswa.IdUser}})
 
             w.WriteHeader(http.StatusNoContent)
         }

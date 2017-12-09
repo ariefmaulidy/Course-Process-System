@@ -23,7 +23,7 @@ type Mahasiswa struct {
 func RoutesMahasiswa(mux *goji.Mux, session *mgo.Session) {
 
     mux.HandleFunc(pat.Get("/mahasiswa"), AllMahasiswa(session)) //untuk retrieve smua yang di db
-    mux.HandleFunc(pat.Post("/addmahasiswa"), AddMahasiswa(session))
+    // mux.HandleFunc(pat.Post("/addmahasiswa"), AddMahasiswa(session))
     mux.HandleFunc(pat.Get("/mahasiswa/:iduser"), GetAttributeMahasiswa(session))
 }
 
@@ -70,51 +70,51 @@ func AllMahasiswa(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-func AddMahasiswa(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
-    return func(w http.ResponseWriter, r *http.Request) {
-        session := s.Copy()
-        defer session.Close()
+// func AddMahasiswa(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+//     return func(w http.ResponseWriter, r *http.Request) {
+//         session := s.Copy()
+//         defer session.Close()
 
-        var mahasiswa Mahasiswa
-        decoder := json.NewDecoder(r.Body)
-        err := decoder.Decode(&mahasiswa)
-        if err != nil {
-            jsonhandler.SendWithJSON(w, "Incorrect body", http.StatusBadRequest)
-            return
-        }
+//         var mahasiswa Mahasiswa
+//         decoder := json.NewDecoder(r.Body)
+//         err := decoder.Decode(&mahasiswa)
+//         if err != nil {
+//             jsonhandler.SendWithJSON(w, "Incorrect body", http.StatusBadRequest)
+//             return
+//         }
 
-        c := session.DB("ccs").C("mahasiswa")
+//         c := session.DB("ccs").C("mahasiswa")
 
-        //untuk auto increment
-        var lastMahasiswa Mahasiswa
-        var lastId  int
+//         //untuk auto increment
+//         var lastMahasiswa Mahasiswa
+//         var lastId  int
 
-        err = c.Find(nil).Sort("-$natural").Limit(1).One(&lastMahasiswa)
-        if err != nil {
-            lastId = 0
-        } else {
-            lastId = lastMahasiswa.IdMahasiswa
-        }
-        currentId := lastId + 1
-        mahasiswa.IdMahasiswa = currentId
+//         err = c.Find(nil).Sort("-$natural").Limit(1).One(&lastMahasiswa)
+//         if err != nil {
+//             lastId = 0
+//         } else {
+//             lastId = lastMahasiswa.IdMahasiswa
+//         }
+//         currentId := lastId + 1
+//         mahasiswa.IdMahasiswa = currentId
 
-        err = c.Insert(mahasiswa)
-        if err != nil {
-            if mgo.IsDup(err) {
-                jsonhandler.SendWithJSON(w, "duplicate", http.StatusOK)
-                return
-            }
+//         err = c.Insert(mahasiswa)
+//         if err != nil {
+//             if mgo.IsDup(err) {
+//                 jsonhandler.SendWithJSON(w, "duplicate", http.StatusOK)
+//                 return
+//             }
 
-            jsonhandler.SendWithJSON(w, "Database error", http.StatusNotFound)
-            log.Println("Failed insert mahasiswa: ", err)
-            return
-        }
+//             jsonhandler.SendWithJSON(w, "Database error", http.StatusNotFound)
+//             log.Println("Failed insert mahasiswa: ", err)
+//             return
+//         }
 
-        w.Header().Set("Content-Type", "application/json")
-        w.Header().Set("Location", r.URL.Path+"/"+mahasiswa.NIM)
-        w.WriteHeader(http.StatusCreated)
-    }
-}
+//         w.Header().Set("Content-Type", "application/json")
+//         w.Header().Set("Location", r.URL.Path+"/"+mahasiswa.NIM)
+//         w.WriteHeader(http.StatusCreated)
+//     }
+// }
 
 func GetAttributeMahasiswa(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
