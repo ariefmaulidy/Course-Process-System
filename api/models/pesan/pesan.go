@@ -12,6 +12,8 @@ import (
     "gopkg.in/mgo.v2/bson"
     "../../auth"
     "../../jsonhandler"
+    "../tempcgd"
+    "../chatgroupdiscussion"
 )
 
 type Pesan struct {
@@ -76,7 +78,27 @@ func AddPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         IdCGD,err = strconv.Atoi(pat.Param(r, "idcgd"))
 
         c := session.DB("ccs").C("pesan")
+        d := session.DB("ccs").C("tempcgd")
+        e := session.DB("ccs").C("chatgroupdiscussion")
 
+        var tempcgd tempcgd.TempCGD
+
+        err = d.Find(bson.M{"$and": []bson.M{bson.M{"idcgd": IdCGD}, bson.M{"iduser": claims.IdUser}}}).One(&tempcgd)
+        if err != nil {
+            tempcgd.IdCGD = IdCGD
+            tempcgd.JumlahPesan = 1
+            tempcgd.IdUser = claims.IdUser
+            d.Insert(tempcgd)
+        } else {
+            tempcgd.JumlahPesan = tempcgd.JumlahPesan + 1
+            d.Update(bson.M{"$and": []bson.M{bson.M{"idcgd": IdCGD}, bson.M{"iduser": claims.IdUser}}}, bson.M{"$set": bson.M{"jumlahpesan": tempcgd.JumlahPesan}})
+        }
+
+        var cgd chatgroupdiscussion.ChatGroupDiscussion
+
+        cgd.JumlahPesan = cgd.JumlahPesan + 1
+        e.Update(bson.M{"idcgd": IdCGD}, bson.M{"$set": bson.M{"jumlahpesan": cgd.JumlahPesan}})
+        
         //untuk auto increment
         var lastPesan Pesan
         var lastId int

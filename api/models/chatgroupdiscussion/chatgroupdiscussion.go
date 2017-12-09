@@ -15,12 +15,13 @@ import (
 type ChatGroupDiscussion struct {
 	IdCGD	        int			`json:"idcgd"`
 	IdMataKuliah	int		    `json:"idmatakuliah"`
+    JumlahPesan     int         `json:"jumlahpesan"`
 }
 
 func RoutesChatGroupDiscussion(mux *goji.Mux, session *mgo.Session) {
 
     mux.HandleFunc(pat.Get("/cgd"), AllChatGroupDiscussion(session)) //untuk retrieve smua yang di db
-    mux.HandleFunc(pat.Post("/addcgd"), AddChatGroupDiscussion(session))
+    //mux.HandleFunc(pat.Post("/addcgd"), AddChatGroupDiscussion(session))
     mux.HandleFunc(pat.Get("/cgd/:idcgd"), GetAttributeChatGroupDiscussion(session))
 }
 
@@ -48,7 +49,7 @@ func AllChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *http.
     }
 }
 
-func AddChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+/*func AddChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
         session := s.Copy()
         defer session.Close()
@@ -86,7 +87,7 @@ func AddChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *http.
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusCreated)
     }
-}
+}*/
 
 func GetAttributeChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
