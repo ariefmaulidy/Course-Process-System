@@ -12,6 +12,7 @@ import { AuthComponent } from './auth/auth.component';
 import { DetailjadwalComponent } from './detailjadwal/detailjadwal.component';
 import { ForumdiskusiComponent } from './forumdiskusi/forumdiskusi.component';
 import { RuanganComponent } from './ruangan/ruangan.component';
+import { ChatgrupComponent } from './chatgrup/chatgrup.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { RuanganComponent } from './ruangan/ruangan.component';
     AuthComponent,
     DetailjadwalComponent,
     ForumdiskusiComponent,
-    RuanganComponent
+    RuanganComponent,
+    ChatgrupComponent
   ],
   imports: [
     BrowserModule,
@@ -52,6 +54,10 @@ import { RuanganComponent } from './ruangan/ruangan.component';
       {
         path : 'ruangan',
         component: RuanganComponent
+      },
+      {
+        path : 'chatgrup',
+        component: ChatgrupComponent
       },
       {
         path : 'auth',
