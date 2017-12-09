@@ -13,7 +13,6 @@ import (
 )
 
 type Mahasiswa struct {
-	IdMahasiswa	    int			`json:"idmahasiswa"`
 	Nama			string		`json:"nama"`
 	IdUser			int	 		`json:"iduser"`
 	Departemen		string		`json:"departemen"`
