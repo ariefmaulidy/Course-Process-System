@@ -3,7 +3,6 @@ package pengajar
 import (
     "encoding/json"
     "log"
-    "time"
     "net/http"
 
 	"goji.io"
@@ -145,8 +144,7 @@ func JadwalMengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request)
 
 			type jadwalfix struct{
 				MataKuliah 	 string      `json:"matakuliah"`
-				WaktuMulai	 time.Time   `json:"waktumulai"`
-                WaktuSelesai time.Time   `json:"waktuselesai"`
+				Waktu	     string      `json:"waktu"`
 				Ruangan		 string      `json:"ruangan"`
             }
             realjadwal := []jadwalfix{}
@@ -177,7 +175,7 @@ func JadwalMengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request)
                     e := session.DB("css").C("ruangan")
                     var ruangan ruangan.Ruangan
                     e.Find(bson.M{"idruangan":element2.IdRuangan}).One(&ruangan)
-                    j := jadwalfix{MataKuliah:matkul.NamaMataKuliah, WaktuMulai:element2.WaktuMulai,WaktuSelesai:element2.WaktuSelesai, Ruangan:ruangan.NamaRuangan }
+                    j := jadwalfix{MataKuliah:matkul.NamaMataKuliah, Waktu:element2.Waktu, Ruangan:ruangan.NamaRuangan }
                     realjadwal = append(realjadwal,j)
                 }
             }

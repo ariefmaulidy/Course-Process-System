@@ -3,7 +3,6 @@ package jadwalkuliah
 import (
     "encoding/json"
     "log"
-    "time"
     "net/http"
 
 	"goji.io"
@@ -14,6 +13,8 @@ import (
     "../ruangan"
     "../../auth"
     "../../jsonhandler"
+    "../matakuliah"
+    "../mahasiswa"
 )
 
 type JadwalKuliah struct {
@@ -21,8 +22,7 @@ type JadwalKuliah struct {
     IdPJ            int         `json:"idpj"`
 	IdMataKuliah	int	      	`json:"idmatakuliah"`
     IdRuangan       int         `json:"idruangan"`
-    WaktuMulai		time.Time   `json:"waktumulai"`
-    WaktuSelesai    time.Time   `json:"waktuselesai"`
+    Waktu		    string      `json:"waktu"`
     Hari            string      `json:"hari"`
 }
 
@@ -31,6 +31,7 @@ func RoutesJadwalKuliah(mux *goji.Mux, session *mgo.Session) {
     mux.HandleFunc(pat.Get("/jadwalkuliah"), AllJadwalKuliah(session)) //untuk retrieve smua yang di db
     mux.HandleFunc(pat.Post("/addjadwalkuliah"), AddJadwalKuliah(session))
     mux.HandleFunc(pat.Get("/jadwalkuliah/:idjadwalkuliah"), GetAttributeJadwalKuliah(session))
+    mux.HandleFunc(pat.Get("/detailjadwalkuliah"), auth.Validate(AllDetailJadwalKuliah(session)))
     mux.HandleFunc(pat.Get("/detailjadwalkuliah/:idjadwalkuliah"), auth.Validate(GetDetailJadwalKuliah(session))) //jadwal yang dilihat di TU terdapat list mahasiswa
 }
 
@@ -130,8 +131,68 @@ func GetAttributeJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *htt
     }
 }
 
+func AllDetailJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        _, ok := r.Context().Value(auth.MyKey).(auth.Claims)
+        if !ok {
+          http.NotFound(w, r)
+          return
+        }
+
+        session := s.Copy()
+        defer session.Close()
+
+        
+        c := session.DB("ccs").C("jadwalkuliah")
+        d := session.DB("ccs").C("ruangan")
+        e := session.DB("ccs").C("matakuliah")
+
+        type DataSend struct {
+            DataJadwalKuliah        []JadwalKuliah                     `json:"datajadwalkuliah"`
+            DataRuangan             []ruangan.Ruangan                  `json:"dataruangan"`
+            DataMataKuliah          []matakuliah.MataKuliah            `json:"datapesertakuliah"`
+        }
+
+        var datasend DataSend
+
+        err := c.Find(bson.M{}).All(&datasend.DataJadwalKuliah)
+        if err != nil {
+            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+            log.Println("Failed find jadwalkuliah: ", err)
+            return
+        }
+
+        //tinggal for di sini untuk get ruangan sama data matkul
+        var tempruangan ruangan.Ruangan
+        var tempmatakuliah matakuliah.MataKuliah
+
+        for _,data := range datasend.DataJadwalKuliah {
+            d.Find(bson.M{"idruangan": data.IdRuangan}).One(&tempruangan)
+            datasend.DataRuangan = append(datasend.DataRuangan, tempruangan)
+        }
+
+        for _,data := range datasend.DataJadwalKuliah {
+            e.Find(bson.M{"idmatakuliah": data.IdMataKuliah}).One(&tempmatakuliah)
+            datasend.DataMataKuliah = append(datasend.DataMataKuliah, tempmatakuliah)
+        }
+
+        respBody, err := json.MarshalIndent(datasend, "", "  ")
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
+    }
+}
+
 func GetDetailJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
+        _, ok := r.Context().Value(auth.MyKey).(auth.Claims)
+        if !ok {
+          http.NotFound(w, r)
+          return
+        }
+
         session := s.Copy()
         defer session.Close()
 
@@ -140,9 +201,13 @@ func GetDetailJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.R
         c := session.DB("ccs").C("jadwalkuliah")
         d := session.DB("ccs").C("ruangan")
         e := session.DB("ccs").C("pesertakuliah")
+        f := session.DB("ccs").C("matakuliah")
+        g := session.DB("ccs").C("mahasiswa")
 
         type DataSend struct {
             DataJadwalKuliah        JadwalKuliah                     `json:"datajadwalkuliah"`
+            DataMataKuliah          matakuliah.MataKuliah            `json:"matakuliah"`
+            DataMahasiswa           []mahasiswa.Mahasiswa            `json:"mahasiswa"`
             DataRuangan             ruangan.Ruangan                  `json:"dataruangan"`
             DataPesertaKuliah       []pesertakuliah.PesertaKuliah    `json:"datapesertakuliah"`
         }
@@ -170,7 +235,20 @@ func GetDetailJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.R
             return
         }
 
-        
+        err = f.Find(bson.M{"idmatakuliah": datasend.DataJadwalKuliah.IdMataKuliah}).One(&datasend.DataMataKuliah)
+        if err != nil {
+            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+            log.Println("Failed find datamatakuliah: ", err)
+            return
+        }        
+
+        var tempmahasiswa mahasiswa.Mahasiswa
+
+        for _,data := range datasend.DataPesertaKuliah {
+            g.Find(bson.M{"iduser": data.IdUser}).One(&tempmahasiswa)
+            datasend.DataMahasiswa = append(datasend.DataMahasiswa, tempmahasiswa)
+        }
+      
 
         respBody, err := json.MarshalIndent(datasend, "", "  ")
         if err != nil {

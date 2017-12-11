@@ -18,8 +18,7 @@ type PesananRuangan struct {
     IdRuangan	    int			`json:"idruangan"`
     IdMataKuliah    int         `json:"idmatakuliah"`
     Tanggal         time.Time   `json:"tanggal"`
-    WaktuMulai      time.Time   `json:"waktumulai"`
-    WaktuSelesai    time.Time   `json:"waktuselesai"`
+    Waktu           string      `json:"waktu"`
     Status          string      `json:"status"`
     Alasan          string      `json:"alasan"`
     IdPemesan       string      `json:"idpemesan"`

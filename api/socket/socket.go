@@ -17,6 +17,7 @@ import(
     "../models/dosen"
     "../models/pesan"
     "../jsonhandler"
+    "../auth"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -26,10 +27,11 @@ type DataSend struct {
 	IsiPesan 		string 	`json:"isipesan"`
 	NamaPengirim 	string 	`json:"namapengirim"`
 	ClassPengirim 	string 	`json:"classpengirim"`
+	Status 			string 	`json:"status"` //menandakan siapa orangnya
 }
 
 func RoutesSocket(mux *goji.Mux, session *mgo.Session){
-	mux.HandleFunc(pat.New("/roomcgd/:idcgd"), GetRoomCGD(session))
+	mux.HandleFunc(pat.New("/roomcgd/:idcgd"), auth.Validate(GetRoomCGD(session)))
 }	 	
 
 func remove(s []DataSend, r DataSend) []DataSend {
@@ -43,7 +45,11 @@ func remove(s []DataSend, r DataSend) []DataSend {
 
 func GetRoomCGD(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
-	 	
+	 	claims, ok := r.Context().Value(auth.MyKey).(auth.Claims)
+        if !ok {
+          http.NotFound(w, r)
+          return
+        }
     	//for connection
 	 	conn, error := (&websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}).Upgrade(w, r, nil)
 	 	if error != nil {
@@ -107,7 +113,11 @@ func GetRoomCGD(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 					            log.Println("Failed find tatausaha: ", err)
 					            return
 					        }
-					        datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim})
+					        if message.IdPengirim == claims.IdUser {
+					        	datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Saya"})
+				    		} else {
+				    			datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Bukan Saya"})
+				    		}
 				    	}
 				    	if message.ClassPengirim == "Dosen"{
 				    		var pengirim dosen.Dosen
@@ -117,7 +127,11 @@ func GetRoomCGD(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 					            log.Println("Failed find dosen: ", err)
 					            return
 					        }
-					        datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim})
+					        if message.IdPengirim == claims.IdUser {
+					        	datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Saya"})
+				    		} else {
+				    			datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Bukan Saya"})
+				    		}
 				    	}
 				    	if message.ClassPengirim == "Mahasiswa"{
 				    		var pengirim mahasiswa.Mahasiswa
@@ -127,7 +141,11 @@ func GetRoomCGD(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 					            log.Println("Failed find mahasiswa: ", err)
 					            return
 					        }
-					        datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim})
+					        if message.IdPengirim == claims.IdUser {
+					        	datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Saya"})
+				    		} else {
+				    			datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Bukan Saya"})
+				    		}
 				    	}
 					}
 
