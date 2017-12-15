@@ -1,0 +1,31 @@
+<ion-header>
+  <ion-navbar color="primary">
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Jadwal Mengajar</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+  <!-- <button (click)="showDetail()" ion-button>Lihat Detail</button> -->
+  <ion-item>
+    <ion-label>Tanggal</ion-label>
+    <ion-datetime displayFormat="MMM DD YYYY" [(ngModel)]="date"></ion-datetime>
+  </ion-item>
+  
+  <ion-card *ngFor="let dataMatkul of dataMatkuls">
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col col-3>{{ dataMatkul.mulai }}</ion-col>
+          <ion-col col-9><b>{{ dataMatkul.nama }}</b></ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col col-3>{{ dataMatkul.selesai }}</ion-col>
+          <ion-col col-9>{{ dataMatkul.ruang }}</ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
