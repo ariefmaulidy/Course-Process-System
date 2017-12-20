@@ -16,6 +16,8 @@ import { ChatgrupComponent } from './chatgrup/chatgrup.component';
 import { InputBapComponent } from './input-bap/input-bap.component';
 import { Ng2AutoCompleteModule } from 'ng2-auto-complete';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { BapComponent } from './bap/bap.component';
+import { LoginComponent } from './login/login.component';
 
 
 @NgModule({
@@ -30,6 +32,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     RuanganComponent,
     ChatgrupComponent,
     InputBapComponent,
+    BapComponent,
+    LoginComponent,
   ],
   imports: [
     BrowserModule,
@@ -73,6 +77,14 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
       {
         path : 'inputbap',
         component: InputBapComponent
+      },
+      {
+        path : 'bap',
+        component: BapComponent
+      },
+      {
+        path : 'login',
+        component: LoginComponent
       },
       {
         path : 'auth',
