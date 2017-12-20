@@ -13,6 +13,10 @@ import { DetailjadwalComponent } from './detailjadwal/detailjadwal.component';
 import { ForumdiskusiComponent } from './forumdiskusi/forumdiskusi.component';
 import { RuanganComponent } from './ruangan/ruangan.component';
 import { ChatgrupComponent } from './chatgrup/chatgrup.component';
+import { InputBapComponent } from './input-bap/input-bap.component';
+import { Ng2AutoCompleteModule } from 'ng2-auto-complete';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+
 
 @NgModule({
   declarations: [
@@ -24,12 +28,15 @@ import { ChatgrupComponent } from './chatgrup/chatgrup.component';
     DetailjadwalComponent,
     ForumdiskusiComponent,
     RuanganComponent,
-    ChatgrupComponent
+    ChatgrupComponent,
+    InputBapComponent,
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpModule,
+    NgbModule.forRoot(),
+    Ng2AutoCompleteModule,
     RouterModule.forRoot([
       {
         path :'',
@@ -48,6 +55,10 @@ import { ChatgrupComponent } from './chatgrup/chatgrup.component';
         component: DetailjadwalComponent
       },
       {
+        path : 'detailjadwal/:id_matkul',
+        component: DetailjadwalComponent
+      },
+      {
         path : 'forumdiskusi',
         component: ForumdiskusiComponent
       },
@@ -60,6 +71,10 @@ import { ChatgrupComponent } from './chatgrup/chatgrup.component';
         component: ChatgrupComponent
       },
       {
+        path : 'inputbap',
+        component: InputBapComponent
+      },
+      {
         path : 'auth',
         component : AuthComponent
       }
@@ -67,7 +82,6 @@ import { ChatgrupComponent } from './chatgrup/chatgrup.component';
     ], { useHash: true })
 
   ],
-  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
