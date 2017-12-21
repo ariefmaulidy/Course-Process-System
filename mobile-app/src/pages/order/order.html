@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-navbar color="primary">
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Daftar Pesanan</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-list>
+    <ion-card *ngFor="let dataPesanan of dataPesanans">
+      <ion-card-content>
+        <ion-card-header text-center>
+          <h2><b>{{ dataPesanan.ruangan }}</b></h2>
+        </ion-card-header>
+        <ion-grid>
+          <ion-row>
+            <ion-col>Keperluan</ion-col>
+            <ion-col>{{ dataPesanan.keperluan }}</ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>Hari/Tanggal</ion-col>
+            <ion-col>{{ dataPesanan.tanggal }}</ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>Waktu</ion-col>
+            <ion-col>{{ dataPesanan.waktu }}</ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>Pemesan</ion-col>
+            <ion-col>{{ dataPesanan.pemesan }}</ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>Status</ion-col>
+            <ion-col>{{ dataPesanan.status }}</ion-col>
+          </ion-row>
+        </ion-grid>
+        <div text-center>
+          <button ion-button (click)="showConfirm()">Setujui</button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+</ion-content>

@@ -11,6 +11,9 @@ import { AuthPage } from '../pages/auth/auth';
 import { ChatroomPage } from '../pages/chatroom/chatroom';
 import { HomePage } from '../pages/home/home';
 import { JadwalPage } from '../pages/jadwal/jadwal';
+import { RuanganPage } from '../pages/ruangan/ruangan';
+import { OrderPage } from '../pages/order/order';
+import { RuanganDetailPage } from '../pages/ruangan-detail/ruangan-detail';
 import { DataProvider } from '../providers/data/data';
 
 @NgModule({
@@ -19,7 +22,10 @@ import { DataProvider } from '../providers/data/data';
     AuthPage,
     ChatroomPage,
     HomePage,
-    JadwalPage
+    JadwalPage,
+    RuanganPage,
+    OrderPage,
+    RuanganDetailPage
   ],
   imports: [
     BrowserModule,
@@ -33,7 +39,10 @@ import { DataProvider } from '../providers/data/data';
     AuthPage,
     ChatroomPage,
     HomePage,
-    JadwalPage
+    JadwalPage,
+    RuanganPage,
+    OrderPage,
+    RuanganDetailPage
   ],
   providers: [
     StatusBar,

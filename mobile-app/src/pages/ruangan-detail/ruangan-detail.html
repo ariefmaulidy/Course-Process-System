@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-navbar color="primary">
+    <ion-title>{{ item }}</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-list>
+    <ion-card *ngFor="let dataRuangan of dataRuangans">
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col>Keperluan</ion-col>
+            <ion-col>{{ dataRuangan.keperluan }}</ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>Hari/Tanggal</ion-col>
+            <ion-col>{{ dataRuangan.tanggal }}</ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>Waktu</ion-col>
+            <ion-col>{{ dataRuangan.waktu }}</ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>Pemesan</ion-col>
+            <ion-col>{{ dataRuangan.pemesan }}</ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>Status</ion-col>
+            <ion-col>{{ dataRuangan.status }}</ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+</ion-content>
