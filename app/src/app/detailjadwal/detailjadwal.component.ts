@@ -50,21 +50,23 @@ export class DetailjadwalComponent implements OnInit {
   				this.SKS = data['matakuliah'].sks
   				this.kelas = data['datajadwalkuliah'].KelasParalel
   				this.pengajar = data['datadosen'].nama
-  				this.namaRuangan = data['dataruangan'].namaruangan
-  				for(let i = 0; i < data['mahasiswa'].length; i++){
-	  				const _dataMahasiswa = {
-	  					nim: data['mahasiswa'][i].nim,
-	  					nama: data['mahasiswa'][i].nama,
-	  					statusmayor: data['datapesertakuliah'][i].statusmayor,
-	  					statuspj: data['datapesertakuliah'][i].statuspj,
-	  					iduser: data['mahasiswa'][i].iduser
-	  				}
-	  				if(_dataMahasiswa.statuspj == "Penanggung Jawab" && this.hasPJ == false){
-	  					this.hasPJ = true;
-	  					this.idPJ = _dataMahasiswa.iduser;
-	  				}
-	  				this.datamahasiswa.push(_dataMahasiswa)
-	  			}
+				this.namaRuangan = data['dataruangan'].namaruangan
+				if(data['mahasiswa'] != null){
+					for(let i = 0; i < data['mahasiswa'].length; i++){
+						const _dataMahasiswa = {
+							nim: data['mahasiswa'][i].nim,
+							nama: data['mahasiswa'][i].nama,
+							statusmayor: data['datapesertakuliah'][i].statusmayor,
+							statuspj: data['datapesertakuliah'][i].statuspj,
+							iduser: data['mahasiswa'][i].iduser
+						}
+						if(_dataMahasiswa.statuspj == "Penanggung Jawab" && this.hasPJ == false){
+							this.hasPJ = true;
+							this.idPJ = _dataMahasiswa.iduser;
+						}
+						this.datamahasiswa.push(_dataMahasiswa)
+					}
+				}  
   			}
 		});
 	}

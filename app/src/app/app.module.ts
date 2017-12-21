@@ -81,7 +81,7 @@ import { DataService } from './data/data.service';
         component: InputBapComponent
       },
       {
-        path : 'bap',
+        path : 'bap/:idjadwal',
         component: BapComponent
       },
       {

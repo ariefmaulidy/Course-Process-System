@@ -14,33 +14,33 @@
                         <table class="table no-border">
                           <tr>
                             <td><b>Kode Mata Kuliah / Paralel</b></td>
-                            <td>: KOM431 / 1</td>
+                            <td>: {{datamatkul?.kodematakuliah}} / {{datajadwal?.KelasParalel}}</td>
                             <td><b>SKS</b></td>
-                            <td>: 3</td>
+                            <td>: {{datamatkul?.sks}}</td>
                           </tr>
                           <tr>
                             <td><b>Tahun Akademik</b></td>
                             <td>: 2017/2018</td>
                             <td><b>Semester</b></td>
-                            <td>: 5</td>
+                            <td>: {{datamatkul?.semester}}</td>
                           </tr>
                           <tr>
                             <td><b>Jadwal Yg Ditetapkan</b></td>
-                            <td>: Rabu</td>
+                            <td>: {{datajadwal?.hari}}</td>
                             <td><b>Pukul</b></td>
-                            <td>: 10.00 - 12.00 WIB</td>
+                            <td>: {{datajadwal?.waktu}}</td>
                           </tr>
                           <tr>
                             <td><b>Peserta</b></td>
                             <td>: G61</td>
                             <td><b>Jumlah Mhs Yg Ditetapkan</b></td>
-                            <td>: 15</td>
+                            <td>: {{datapeserta?.length}}</td>
                           </tr>
                           <tr>
                             <td><b>Penanggung Jawab</b></td>
-                            <td>: Ir. Julio Adisantoso M.Kom</td>
+                            <td>: {{namadosen}}</td>
                             <td><b>Ruang</b></td>
-                            <td>: Lab. 2 Kom</td>
+                            <td>: {{ruangan}}</td>
                           </tr>
                           <tr>
                             <td colspan="6"></td>
@@ -52,7 +52,7 @@
                           <thead>
                             <tr>
                               <th class="text-center"> Minggu Ke- </th>
-                              <th class="text-center"> Hari/Tanggal </th>
+                              <th class="text-center"> Tanggal </th>
                               <th class="text-center"> Materi </th>
                               <th class="text-center"> Nama Pengajar </th>
                               <th class="text-center"> Waktu Mulai/Selesai </th>
@@ -63,35 +63,15 @@
                           </thead>
 
                           <tbody>
-                            <tr>
-                              <td class="text-center"> 1 </td>
-                              <td class="text-center"> Senin, 18 Desember 2017 </td>
-                              <td class="text-center"> Pendahuluan </td>
-                              <td class="text-center"> Julio Adi Santoso </td>
-                              <td class="text-center"> 08.00 - 10.00 </td>
+                            <tr *ngFor="let data of databap;let i =index">
+                              <td class="text-center"> {{i+1}} </td>
+                              <td class="text-center"> {{data.tanggal | date:'dd/MM/yyyy'}} </td>
+                              <td class="text-center"> {{data.topikkuliah}} </td>
+                              <td class="text-center">  {{datapengajar[i].nama}}</td>
+                              <td class="text-center"> {{data.waktu}} </td>
                               <td class="text-center"> INFOCUS/ NOTEBOOK/ WIRELESS/ SPIDOL </td>
-                              <td class="text-center"> 15 </td>
-                              <td class="text-center"> Tidak ada catatan </td>
-                            </tr>
-                            <tr>
-                              <td class="text-center"> 2 </td>
-                              <td class="text-center"> Selasa, 19 Desember 2017 </td>
-                              <td class="text-center"> Pemberian Tugas </td>
-                              <td class="text-center"> Julio Adi Santoso </td>
-                              <td class="text-center"> 08.00 - 10.00 </td>
-                              <td class="text-center"> INFOCUS/ NOTEBOOK/ WIRELESS/ SPIDOL </td>
-                              <td class="text-center"> 15 </td>
-                              <td class="text-center"> Tidak ada catatan </td>
-                            </tr>
-                            <tr>
-                              <td class="text-center"> 3 </td>
-                              <td class="text-center"> Rabu, 20 Desember 2017 </td>
-                              <td class="text-center"> Kuis mendadak </td>
-                              <td class="text-center"> Julio Adi Santoso </td>
-                              <td class="text-center"> 08.00 - 10.00 </td>
-                              <td class="text-center"> INFOCUS/ NOTEBOOK/ WIRELESS/ SPIDOL </td>
-                              <td class="text-center"> 15 </td>
-                              <td class="text-center"> Tidak ada catatan </td>
+                              <td class="text-center"> {{data.jumlahpeserta}} </td>
+                              <td class="text-center"> {{data.catatan}} </td>
                             </tr>
                           </tbody>
                         </table>

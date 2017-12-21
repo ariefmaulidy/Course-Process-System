@@ -21,6 +21,7 @@ export class DataService{
 	public urlAddBAP = this.hostname + 'addbap';
 	public urlGetBAP = this.hostname + 'bap'; //untuk all tidak ditambahkan parameter
 	public urlEditBAP = this.hostname + 'editbap';
+	public urlGetJadwalBAP = this.hostname + 'jadwalbap';
 
 	//cgd
 	public urlGetCGD = this.hostname + 'roomcgd'; //untuk all tidak ditambahkan parameter
@@ -45,6 +46,7 @@ export class DataService{
 
 	//pesananruangan yang getnya belum buat di TU
 	public urlAddPesananRuangan = this.hostname + 'addpesananruangan';
+	public urlMyPesananRuangan = this.hostname + 'mypesananruangan';
 
 	//tatausaha
 	public urlAssignPJKelas = this.hostname + 'assignpjkelas';

@@ -47,7 +47,7 @@ export class JadwalkuliahComponent implements OnInit {
             count = count + 1;
             const _dataMatkul = {
               no: count,
-              idMatkul: this.dataMataKuliah[i].idMatkul,
+              idJadwal: this.dataMataKuliah[i].idJadwal,
               kodeMatkul: this.dataMataKuliah[i].kodeMatkul,
               namaMatkul: this.dataMataKuliah[i].namaMatkul,
               hari: this.dataMataKuliah[i].hari,
@@ -72,7 +72,7 @@ export class JadwalkuliahComponent implements OnInit {
           count = count + 1;
             const _dataMatkul = {
               no: count,
-              idMatkul: this.dataMataKuliah[i].idMatkul,
+              idJadwal: this.dataMataKuliah[i].idJadwal,
               kodeMatkul: this.dataMataKuliah[i].kodeMatkul,
               namaMatkul: this.dataMataKuliah[i].namaMatkul,
               hari: this.dataMataKuliah[i].hari,
@@ -97,7 +97,7 @@ export class JadwalkuliahComponent implements OnInit {
   				for(let i = 0; i < data['datamatakuliah'].length; i++){
   					const _dataMatkul = {
               no: i+1,
-              idMatkul: data['datamatakuliah'][i].idmatakuliah,
+              idJadwal: data['datajadwalkuliah'][i].idjadwalkuliah,
               kodeMatkul: data['datamatakuliah'][i].kodematakuliah,
               namaMatkul: data['datamatakuliah'][i].namamatakuliah + " (" + data['datajadwalkuliah'][i].KelasParalel + ")",
               hari: data['datajadwalkuliah'][i].hari,

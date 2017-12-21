@@ -14,11 +14,11 @@
 	                    </div>
 	                    <div class="form-group">
 	                        <label for="exampleInputEmail1">Pilih Tanggal</label>
-		    				<input type="date" class="form-control">
+		    				<input type="date" class="form-control" [ngModel] ="tanggal | date:'yyyy-MM-dd'" (ngModelChange)="tanggal = $event" name="tanggal">
 	                    </div>
 	                    <div class="form-group">
 	                        <label for="exampleInputEmail1">Materi</label>
-		    				<textarea class="form-control"></textarea>
+		    				<textarea class="form-control" [(ngModel)]="topikkuliah" name="topikkuliah"></textarea>
 	                    </div>
 	                    <div class="form-group">
 	                        <label for="exampleInputEmail1">Nama Pengajar</label>
@@ -40,15 +40,15 @@
 	                    </div>
 	                    <div class="form-group">
 	                        <label for="exampleInputEmail1">Jumlah mahasiswa hadir</label>
-		    				<input type="text" class="form-control">
+		    				<input type="text" class="form-control" [(ngModel)]="jumlahpeserta" name="jumlahpeserta">
 	                    </div>
 	                    <div class="form-group">
 	                        <label for="exampleInputEmail1">Catatan penting</label>
-		    				<textarea class="form-control"></textarea>
+		    				<textarea class="form-control" [(ngModel)]="catatan" name="catatan"></textarea>
 	                    </div>
 	                   
 	                    <!-- Change this to a button or input when using this as a form -->
-	                    <a href="javascript:;" class="btn btn-sm btn-success">Login</a>
+	                    <button type="submit" class="btn btn-sm btn-success">Tambahkan</button>
 	                </fieldset>
 	            </form>
 	        

@@ -54,7 +54,7 @@
 						    </div>
 						</div>
 						<div class="col-md-1">
-							<button class="btn btn-warning" style="margin-left: -20px;padding: 10px"><h4>Pesan</h4></button>
+							<button data-toggle="modal" data-target="#myModal" (click)="setidruangan(ruangan.idruangan)" class="btn btn-warning" style="margin-left: -20px;padding: 10px"><h4>Pesan</h4></button>
 						</div>
 					</div>
 
@@ -62,32 +62,32 @@
                     </pagination-controls>
             </div>
 
-            <div class="tab-pane fade" id="tab2default">
+            <div class="tab-pane fade" id="tab2default" (click)="getPesanan()">
 						
 			
 								<div class="table-responsive">
 								  <table class="table table-hover">
 									<thead>
 									  <tr>
-										<th class="text-center"> No. </th>
-										<th class="text-center"> Ruangan </th>
-										<th class="text-center"> Mata Kuliah </th>
-										<th class="text-center"> Keperluan </th>
-										<th class="text-center"> Tanggal </th>
-										<th class="text-center"> Waktu </th>
-										<th class="text-center"> Status</th>
+											<th class="text-center"> No. </th>
+											<th class="text-center"> Ruangan </th>
+											<th class="text-center"> Mata Kuliah </th>
+											<th class="text-center"> Keperluan </th>
+											<th class="text-center"> Tanggal </th>
+											<th class="text-center"> Waktu </th>
+											<th class="text-center"> Status</th>
 									  </tr>
 									</thead>
 			
 									<tbody>
-									  <tr class="edit" id="detail">
-										<td id="no" class="text-center"> 1 </td>
-										<td id="name" class="text-center"> RKU 2.01 </td>
-										<td id="mobile" class="text-center"> MPPL </td>
-										<td id="mail" class="text-center"> Kuliah </td>
-										<td id="city" class="text-center"> Senin, 2 februari 2017 </td>
-										<td id="city" class="text-center"> 08.00 - 10.00 </td>
-										<td class="text-center"><span class="warning">Menunggu Konfirmasi</span></td>
+									  <tr *ngFor="let pesanan of dataPesanan; let i = index">
+											<td class="text-center"> {{i+1}} </td>
+											<td class="text-center">  {{dataPesanRuangan[i].namaruangan}}</td>
+											<td class="text-center"> {{dataPesanMatkul[i].namamatakuliah}} </td>
+											<td class="text-center"> {{pesanan.alasan}} </td>
+											<td class="text-center"> {{pesanan.tanggal}} </td>
+											<td class="text-center"> {{pesanan.waktu}} </td>
+											<td class="text-center"><span class="warning">{{pesanan.status}}</span></td>
 									  </tr>
 									</tbody>
 								  </table>
@@ -109,18 +109,18 @@
 				  <h4 class="modal-title">Pemesanan Ruangan</h4>
 				</div>
 				<div class="modal-body" style="padding: 20px">
-					<form>
+					<div>
 						<div class="form-group">
-							<label for="exampleInputEmail1">Mata Kuliah</label>
-							<input type="Text" class="form-control" id="exampleInputEmail1" placeholder="Email">
+							<label >Mata Kuliah</label>
+							<input auto-complete [(ngModel)]="matkul" [source]="namaMatkul" class="form-control" name="matkul" />
 						</div>
 						<div class="form-group">
-							<label for="exampleInputPassword1">Keperluan</label>
-							<input type="text" class="form-control" id="exampleInputPassword1" placeholder="Password">
+							<label>Keperluan</label>
+							<input type="text" class="form-control" [(ngModel)]="alasan" name="alasan">
 						</div>
 						<div class="form-group">
-							<label for="exampleInputPassword1">Keperluan</label>
-							<input type="date" class="form-control" id="exampleInputPassword1" placeholder="Password">
+							<label>Tanggal</label>
+							<input type="date" class="form-control" [ngModel] ="tglpesan | date:'yyyy-MM-dd'" (ngModelChange)="tglpesan = $event">
 						</div>
 						<div class="row">
 							<div class="col-sm-6">
@@ -137,9 +137,9 @@
 							</div>
 						</div>
 						<hr style="margin-top: 0px;">	
-						<button type="button" class="btn btn-primary pull-right">Pesan</button>
+						<button (click)="bookRuangan()" class="btn btn-primary pull-right">Pesan</button>
 						<div class="clearfix"></div>
-					</form>	
+					<div>	
 				</div>
 				
 			  </div>
