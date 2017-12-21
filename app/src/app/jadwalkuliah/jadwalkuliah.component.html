@@ -7,28 +7,32 @@
                           <h2 class="text-center pull-left" style="padding-left: 30px;"> <i class="fa fa-calendar" aria-hidden="true"></i> Jadwal Kuliah </h2>
                         </div>
                         <div class="col-xs-9 col-sm-9 col-md-7">
-                            <div class="col-xs-5 col-md-5">
+                          <div class="col-xs-12 col-sm-12 col-md-12">
+                            <div class="col-xs-12 col-md-4">
                               <label> Pilih Semester </label>
-                               <select class="form-control">
-                                  <option>1</option>
-                                  <option>2</option>
-                                  <option>3</option>
-                                  <option>4</option>
-                                  <option>5</option>
-                                </select>
+                             <select [ngModel] = "sem" (ngModelChange)="sem = $event"  (change)="getBySemester(sem)" class="form-control">
+                                <option selected="True">Semua</option>
+                                <option>1</option>
+                                <option>2</option>
+                                <option>3</option>
+                                <option>4</option>
+                                <option>5</option>
+                                <option>6</option>
+                                <option>7</option>
+                              </select>
                             </div>
-                            <div class="col-xs-5 col-md-7">
+                            <div class="col-xs-12 col-md-7">
                               <label> Pencarian </label>
                               <form class="navbar-form" role="search">
                                 <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Search" name="q">
+                                    <input [ngModel] = "keySearch" (ngModelChange)="keySearch = $event" type="text" class="form-control" placeholder="Search" name="q">
                                     <div class="input-group-btn">
-                                        <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+                                        <button (click)= "getBySearch(keySearch)" class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
                                     </div>
                                 </div>
                               </form>
                             </div>
-                         
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -40,60 +44,75 @@
                             <th class="text-center"> No. </th>
                             <th class="text-center"> Kode Matkul </th>
                             <th class="text-center"> Nama Matkul </th>
+                            <th class="text-center"> Hari </th>
                             <th class="text-center"> Waktu </th>
-                            <th class="text-center"> Kelas Paralel </th>
+                            <th class="text-center"> Ruangan </th>
                             <th></th>
                           </tr>
                         </thead>
 
-                        <tbody>
-                          <tr class="edit" id="detail">
-                            <td id="no" class="text-center"> 1 </td>
-                            <td id="name" class="text-center"> kom1 </td>
-                            <td id="mobile" class="text-center"> MPPL (K1) </td>
-                            <td id="mail" class="text-center"> Senin </td>
-                            <td id="city" class="text-center"> kelas1 </td>
-                            <td class="text-center"> <a routerLink="/detailjadwal">lihat detail</a></td>
-                          </tr>
 
-                          <tr>
-                            <td class="text-center"> 2 </td>
-                            <td class="text-center"> kom2 </td>
-                            <td class="text-center"> MPTP </td>
-                            <td class="text-center"> Selasa </td>
-                            <td class="text-center"> kelas2 </td>
-                            <td  class="text-center"> lihat detail</td>
-                          </tr>
+            
+                        <tbody *ngIf = "semester == checkSemua && search == false && matkulBySearch != null">
 
-                          <tr>
-                            <td class="text-center"> 3 </td>
-                            <td class="text-center"> kom3 </td>
-                            <td class="text-center"> Etikom </td>
-                            <td class="text-center"> rabu </td>
-                            <td class="text-center"> kelas3 </td>
-                            <td  class="text-center"> lihat detail</td>
+                        
+                        
+                          <tr *ngFor="let data of dataMataKuliah | paginate: { itemsPerPage: 10, currentPage: halaman }; let i = index" class="edit" id="detail">
+                            <td class="text-center">{{ data.no }}</td>
+                            <td class="text-center"> {{ data.kodeMatkul }} </td>
+                            <td class="text-center"> {{ data.namaMatkul }} </td>
+                            <td class="text-center"> {{ data.hari }} </td>
+                            <td class="text-center"> {{ data.waktu }} </td>
+                            <td class="text-center"> {{ data.namaRuangan }} </td>
+                            <td class="text-center"> <a routerLink="/detailjadwal/{{ data.idMatkul }}">lihat detail</a></td>
                           </tr>
+                          
 
-                          <tr>
-                            <td class="text-center"> 4 </td>
-                            <td class="text-center"> kom4 </td>
-                            <td class="text-center"> Pengbio </td>
-                            <td class="text-center"> kamis </td>
-                            <td class="text-center"> kelas4 </td>
-                            <td  class="text-center"> lihat detail</td>
-                          </tr>
-
-                          <tr>
-                            <td class="text-center"> 5 </td>
-                            <td class="text-center"> kom5</td>
-                            <td class="text-center"> PTG </td>
-                            <td class="text-center"> Jumat </td>
-                            <td class="text-center"> kelas5 </td>
-                            <td  class="text-center"> lihat detail</td>
-                          </tr>
                         </tbody>
+                
+                        
+                        <tbody *ngIf = "semester != checkSemua && search == false && matkulBySearch != null">
+
+                          
+                          <tr *ngFor="let data of dataMataKuliahBySemester | paginate: { itemsPerPage: 10, currentPage: halaman }; let i = index" class="edit" id="detail">
+                            <td class="text-center">{{ data.no }}</td>
+                            <td class="text-center"> {{ data.kodeMatkul }} </td>
+                            <td class="text-center"> {{ data.namaMatkul }} </td>
+                            <td class="text-center"> {{ data.hari }} </td>
+                            <td class="text-center"> {{ data.waktu }} </td>
+                            <td class="text-center"> {{ data.namaRuangan }} </td>
+                            <td class="text-center"> <a routerLink="/detailjadwal/{{ data.idMatkul }}">lihat detail</a></td>
+                          </tr>
+                          
+
+                        </tbody>
+                  
+
+                        <tbody *ngIf = "search == true">
+
+                        
+                        
+                          <tr class="edit" id="detail">
+                            <td class="text-center">{{ matkulBySearch.no }}</td>
+                            <td class="text-center"> {{ matkulBySearch.kodeMatkul }} </td>
+                            <td class="text-center"> {{ matkulBySearch.namaMatkul }} </td>
+                            <td class="text-center"> {{ matkulBySearch.hari }} </td>
+                            <td class="text-center"> {{ matkulBySearch.waktu }} </td>
+                            <td class="text-center"> {{ matkulBySearch.namaRuangan }} </td>
+                            <td class="text-center"> <a routerLink="/detailjadwal/{{ matkulBySearch.idMatkul }}">lihat detail</a></td>
+                          </tr>
+                          
+
+                        </tbody>
+                        
                       </table>
+
+                      
                     </div>
+
+                    <pagination-controls (pageChange)="halaman = $event">
+                      
+                    </pagination-controls>
 
                     <div class="panel-footer">
                       <div class="row">

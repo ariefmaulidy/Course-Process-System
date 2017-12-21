@@ -5,6 +5,7 @@ import (
     "log"
     "net/http"
     "time"
+    "strconv"
 
 	"goji.io"
     "goji.io/pat"
@@ -14,6 +15,7 @@ import (
     "../jadwalkuliah"
     "../pesananruangan"
     "../matakuliah"
+    "../ruangan"
     "../../auth"
     "../../jsonhandler"
 )
@@ -26,8 +28,9 @@ type Tatausaha struct {
 }
 
 type DataSend struct{
-    Jadwal              []jadwalkuliah.JadwalKuliah     `json:"user"`
-    Pesanan             []pesananruangan.PesananRuangan `json:"lelang"`
+    Ruangan             []ruangan.Ruangan               `json:"ruangan"`
+    Jadwal              []jadwalkuliah.JadwalKuliah     `json:"jadwalkuliah"`
+    Pesanan             []pesananruangan.PesananRuangan `json:"pesananruangan"`
     DataJadwalMatkul    []matakuliah.MataKuliah         `json:"datajadwalmatkul"`
     DataPesananMatkul   []matakuliah.MataKuliah         `json:"datapesananmatkul"`
 }
@@ -38,7 +41,8 @@ func RoutesTataUsaha(mux *goji.Mux, session *mgo.Session) {
     mux.HandleFunc(pat.Post("/addtatausaha"), AddTataUsaha(session))
     mux.HandleFunc(pat.Get("/tatausaha/:iduser"), GetAttributeTataUsaha(session))
     //untuk memasukkan BAP cek di fungsi AddBAP di model bap
-    mux.HandleFunc(pat.Put("/assignpjkelas"), auth.Validate(AssignPJKelas(session)))
+    mux.HandleFunc(pat.Put("/assignpjkelas/:idjadwalkuliah"), auth.Validate(AssignPJKelas(session)))
+    mux.HandleFunc(pat.Put("/editpjkelas/:idjadwalkuliah"), auth.Validate(EditPJKelas(session)))
     //untuk book ruangan cek di fungsi menambahPesananRuangan  di model pesanan ruangan
     mux.HandleFunc(pat.Get("/listbookruangan/:tanggal"), auth.Validate(GetListRuanganBook(session)))
 }
@@ -150,31 +154,69 @@ func AssignPJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
         }		
 
         if claims.Class == "TataUsaha"{
-            IdJadwalKuliah := pat.Param(r, "idjadwalkuliah")
+            IdJadwalKuliah, _ := strconv.Atoi(pat.Param(r, "idjadwalkuliah"))
 
             session := s.Copy()
             defer session.Close()
 
             r.ParseMultipartForm(500000)
-            nim := r.FormValue("nim")
+            IdUser, _ := strconv.Atoi(r.FormValue("iduser"))
 
             c := session.DB("ccs").C("mahasiswa")
             d := session.DB("ccs").C("jadwalkuliah")
+            e := session.DB("ccs").C("pesertakuliah")
 
             var mahasiswa mahasiswa.Mahasiswa
-            err := c.Find(bson.M{"nim": nim}).One(&mahasiswa)
+            err := c.Find(bson.M{"iduser": IdUser}).One(&mahasiswa)
             if err != nil {
                 jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
                 log.Println("Failed find mahasiswa: ", err)
                 return
             }
 
-            c.Update(bson.M{"nim" : nim}, bson.M{"$set": bson.M{"status": "pjkelas"}})
+            e.Update(bson.M{"iduser" : IdUser}, bson.M{"$set": bson.M{"statuspj": "Penanggung Jawab"}})
             d.Update(bson.M{"idjadwalkuliah": IdJadwalKuliah}, bson.M{"$set": bson.M{"idpj": mahasiswa.IdUser}})
 
             w.WriteHeader(http.StatusNoContent)
         }
 	}
+}
+
+func EditPJKelas(s *mgo.Session) func(w http.ResponseWriter, r *http.Request){
+    return func(w http.ResponseWriter, r *http.Request){
+        claims, ok := r.Context().Value(auth.MyKey).(auth.Claims)
+        if !ok {
+            http.NotFound(w, r)
+            return
+        }       
+
+        if claims.Class == "TataUsaha"{
+            IdJadwalKuliah, _ := strconv.Atoi(pat.Param(r, "idjadwalkuliah"))
+
+            session := s.Copy()
+            defer session.Close()
+
+            r.ParseMultipartForm(500000)
+            IdUser, _ := strconv.Atoi(r.FormValue("iduser"))
+
+            c := session.DB("ccs").C("mahasiswa")
+            d := session.DB("ccs").C("jadwalkuliah")
+            e := session.DB("ccs").C("pesertakuliah")
+
+            var mahasiswa mahasiswa.Mahasiswa
+            err := c.Find(bson.M{"iduser": IdUser}).One(&mahasiswa)
+            if err != nil {
+                jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+                log.Println("Failed find mahasiswa: ", err)
+                return
+            }
+
+            e.Update(bson.M{"iduser" : IdUser}, bson.M{"$set": bson.M{"statuspj": ""}})
+            d.Update(bson.M{"idjadwalkuliah": IdJadwalKuliah}, bson.M{"$set": bson.M{"idpj": 0}})
+
+            w.WriteHeader(http.StatusNoContent)
+        }
+    }
 }
 
 func GetListRuanganBook(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
@@ -184,7 +226,7 @@ func GetListRuanganBook(s *mgo.Session) func(w http.ResponseWriter, r *http.Requ
             http.NotFound(w, r)
             return
         }
-        if claims.Class == "Tata Usaha"{
+        if claims.Class == "TataUsaha"{
             session := s.Copy()
             defer session.Close()
             
@@ -199,31 +241,56 @@ func GetListRuanganBook(s *mgo.Session) func(w http.ResponseWriter, r *http.Requ
             layout := "2006-01-02T15:04:05.000Z"
             Tgl,_ := time.Parse(layout,Tanggal)
             hari = Tgl.Weekday().String()
-    
+            switch hari{
+                case "Monday":
+                    hari = "Senin"
+                case "Tuesday":
+                    hari = "Selasa"
+                case "Wednesday":
+                    hari = "Rabu"
+                case "Thursday":
+                    hari = "Kamis"
+                case "Friday":
+                    hari = "Jumat"
+                case "Saturday":
+                    hari = "Sabtu"
+                case "Sunday":
+                    hari = "Minggu"
+            }
+            
+            log.Println(hari,Tanggal)
             c := session.DB("ccs").C("jadwalkuliah")
             d := session.DB("css").C("pesananruangan")
             e := session.DB("ccs").C("matakuliah")
+            f := session.DB("ccs").C("ruangan")
     
-            err := c.Find(bson.M{"hari": hari}).All(&datasend.Jadwal)
+            err := c.Find(bson.M{"hari": hari}).Sort("idruangan","waktu").All(&datasend.Jadwal)
             if err != nil {
                 jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
                 log.Println("Failed find jadwal: ", err)
                 return
             }
     
-            err = d.Find(bson.M{"tanggal": Tanggal}).All(&datasend.Pesanan)
+            err = d.Find(bson.M{"tanggal": Tanggal}).Sort("idruangan","waktu").All(&datasend.Pesanan)
             if err != nil {
                 jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
                 log.Println("Failed find pesanan: ", err)
                 return
             }
 
+            err = f.Find(bson.M{}).All(&datasend.Ruangan)
+            if err != nil {
+                jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+                log.Println("Failed find ruangan: ", err)
+                return
+            }            
+
             for _,data := range datasend.Jadwal {
                 e.Find(bson.M{"idmatakuliah": data.IdMataKuliah}).One(&matkul)
                 datasend.DataJadwalMatkul = append(datasend.DataJadwalMatkul, matkul)
             }   
 
-            for _,data := range datasend.Jadwal {
+            for _,data := range datasend.Pesanan {
                 e.Find(bson.M{"idmatakuliah": data.IdMataKuliah}).One(&matkul)
                 datasend.DataPesananMatkul = append(datasend.DataPesananMatkul, matkul)
             }

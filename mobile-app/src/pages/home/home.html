@@ -9,11 +9,11 @@
 
 <ion-content class="list-avatar-page">
   <ion-list>
-    <ion-item *ngFor="let dataChat of dataChats" (click)="openChatroom($event, dataChat)">
+    <ion-item *ngFor="let dataChat of dataChats" (click)="openChatroom($event, dataChat.id)">
       <h2>{{ dataChat.room }}</h2>
-      <p>{{ dataChat.lastChatText }}</p>
-      <ion-note item-start>{{ dataChat.lastChatTime }}</ion-note>
-      <ion-badge color="danger" item-end>{{ dataChat.unread }}</ion-badge>
+<!--       <p>{{ dataChat.lastChatText }}</p>
+      <ion-note item-start>{{ dataChat.lastChatTime }}</ion-note> -->
+      <ion-badge *ngIf="dataChat.unread != checknol" color="danger" item-end>{{ dataChat.unread }}</ion-badge>
     </ion-item>
   </ion-list>
 </ion-content>

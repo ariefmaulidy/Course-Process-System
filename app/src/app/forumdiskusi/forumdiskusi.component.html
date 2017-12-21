@@ -4,31 +4,50 @@
 <div class="row">
 	<div class="col-md-offset-1 col-md-3">
 		<span>Pilih Semester</span>
-		<select class="form-control">
+		<select [ngModel] = "sem" (ngModelChange)="sem = $event" (change)=getBySemester(sem) class="form-control">
+		  <option selected="True">Semua</option>
 		  <option>1</option>
 		  <option>2</option>
 		  <option>3</option>
 		  <option>4</option>
 		  <option>5</option>
+		  <option>6</option>
+		  <option>7</option>
 		</select>
 	</div>
 	<br>
 	<div class="col-md-3">
 		<div class="input-group">
-            <input type="text" class="form-control" placeholder="Search" name="q">
+            <input [ngModel] = "keySearch" (ngModelChange)="keySearch = $event" type="text" class="form-control" placeholder="Search By Kode Mata Kuliah" name="q">
             <div class="input-group-btn">
-                <button class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
+                <button (click)= "getBySearch(keySearch)" class="btn btn-default" type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
             </div>
         </div>
 	</div>
 </div>
 
+<div *ngIf = "search == false && CGDBySearch != null">
+<div *ngIf = "semester == checkSemua">
+<br><br>
+<ul *ngFor="let data of listCGD ; let i = index" class="sidebarservices">
+        <li><a routerLink="/chatgrup/{{data.idCGD}}"><h2>{{data.namaMatkul}} <span *ngIf = "data.unread != checknol" class="badge" style="background-color: red; padding: 8px;min-width: 28px;border-radius: 50px">{{data.unread}}</span></h2></a></li>
+      </ul>
+</div>
+
+<div *ngIf = "semester != checkSemua">
+<br><br>
+<ul *ngFor="let data of listCGDBySemester ; let i = index" class="sidebarservices">
+        <li><a routerLink="/chatgrup/{{data.idCGD}}"><h2>{{data.namaMatkul}} <span *ngIf = "data.unread != checknol" class="badge" style="background-color: red; padding: 8px;min-width: 28px;border-radius: 50px">{{data.unread}}</span></h2></a></li>
+      </ul>
+</div>
+</div>
+
+<div *ngIf = "search == true">
 <br><br>
 <ul class="sidebarservices">
-        <li><a routerLink="/chatgrup"><h2>KOM 333 Temu Kembali Informasi <span class="badge" style="background-color: red; padding: 8px;min-width: 28px;border-radius: 50px">30</span></h2></a></li>
-        <li><a href="#"><h2>KOM 323 Etika Komputasi <span class="badge" style="background-color: red; padding: 8px;border-radius: 100px;min-width: 28px">3 </span></h2></a></li>
+        <li><a routerLink="/chatgrup/{{CGDBySearch.idCGD}}"><h2>{{CGDBySearch.namaMatkul}} <span *ngIf = "data.unread != 0" class="badge" style="background-color: red; padding: 8px;min-width: 28px;border-radius: 50px">{{data.unread}}</span></h2></a></li>
       </ul>
-
+</div>
      
 
 

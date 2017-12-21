@@ -5,6 +5,7 @@ import (
     "log"
     "net/http"
     "strconv"
+    "time"
 
 	"goji.io"
     "goji.io/pat"
@@ -21,6 +22,7 @@ type Pesan struct {
 	IsiPesan	    string		`json:"isipesan"`
     IdCGD           int         `json:"idcgd"`
     IdPengirim      int         `json:"idpengirim"`
+    SendAt          time.Time   `json:"sendat"`
     ClassPengirim   string      `json:"classpengirim"`
 }
 
@@ -96,6 +98,8 @@ func AddPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 
         var cgd chatgroupdiscussion.ChatGroupDiscussion
 
+        e.Find(bson.M{"idcgd": IdCGD}).One(&cgd)
+
         cgd.JumlahPesan = cgd.JumlahPesan + 1
         e.Update(bson.M{"idcgd": IdCGD}, bson.M{"$set": bson.M{"jumlahpesan": cgd.JumlahPesan}})
         
@@ -115,6 +119,7 @@ func AddPesan(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
         pesan.IdCGD = IdCGD
         pesan.IdPengirim = claims.IdUser
         pesan.ClassPengirim = claims.Class
+        pesan.SendAt = time.Now()
 
         err = c.Insert(pesan)
         if err != nil {

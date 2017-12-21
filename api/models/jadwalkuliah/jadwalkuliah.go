@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "log"
     "net/http"
+    "strconv"
 
 	"goji.io"
     "goji.io/pat"
@@ -15,6 +16,8 @@ import (
     "../../jsonhandler"
     "../matakuliah"
     "../mahasiswa"
+    "../dosen"
+
 )
 
 type JadwalKuliah struct {
@@ -24,6 +27,7 @@ type JadwalKuliah struct {
     IdRuangan       int         `json:"idruangan"`
     Waktu		    string      `json:"waktu"`
     Hari            string      `json:"hari"`
+    KelasParalel    string      `json:kelasparalel`
 }
 
 func RoutesJadwalKuliah(mux *goji.Mux, session *mgo.Session) {
@@ -110,7 +114,8 @@ func GetAttributeJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *htt
         session := s.Copy()
         defer session.Close()
 
-        IdJadwalKuliah := pat.Param(r, "idjadwalkuliah")
+        IdJadwalKuliah, _ := strconv.Atoi(pat.Param(r, "idjadwalkuliah"))
+
 
         c := session.DB("ccs").C("jadwalkuliah")
 
@@ -150,12 +155,12 @@ func AllDetailJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.R
         type DataSend struct {
             DataJadwalKuliah        []JadwalKuliah                     `json:"datajadwalkuliah"`
             DataRuangan             []ruangan.Ruangan                  `json:"dataruangan"`
-            DataMataKuliah          []matakuliah.MataKuliah            `json:"datapesertakuliah"`
+            DataMataKuliah          []matakuliah.MataKuliah            `json:"datamatakuliah"`
         }
 
         var datasend DataSend
 
-        err := c.Find(bson.M{}).All(&datasend.DataJadwalKuliah)
+        err := c.Find(bson.M{}).Sort("waktu").All(&datasend.DataJadwalKuliah)
         if err != nil {
             jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
             log.Println("Failed find jadwalkuliah: ", err)
@@ -196,13 +201,14 @@ func GetDetailJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.R
         session := s.Copy()
         defer session.Close()
 
-        IdJadwalKuliah := pat.Param(r, "idjadwalkuliah")
+        IdJadwalKuliah, _ := strconv.Atoi(pat.Param(r, "idjadwalkuliah"))
 
         c := session.DB("ccs").C("jadwalkuliah")
         d := session.DB("ccs").C("ruangan")
         e := session.DB("ccs").C("pesertakuliah")
         f := session.DB("ccs").C("matakuliah")
         g := session.DB("ccs").C("mahasiswa")
+        h := session.DB("ccs").C("dosen")
 
         type DataSend struct {
             DataJadwalKuliah        JadwalKuliah                     `json:"datajadwalkuliah"`
@@ -210,6 +216,7 @@ func GetDetailJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.R
             DataMahasiswa           []mahasiswa.Mahasiswa            `json:"mahasiswa"`
             DataRuangan             ruangan.Ruangan                  `json:"dataruangan"`
             DataPesertaKuliah       []pesertakuliah.PesertaKuliah    `json:"datapesertakuliah"`
+            DataDosen               dosen.Dosen                      `json:"datadosen"`
         }
 
         var datasend DataSend
@@ -248,6 +255,13 @@ func GetDetailJadwalKuliah(s *mgo.Session) func(w http.ResponseWriter, r *http.R
             g.Find(bson.M{"iduser": data.IdUser}).One(&tempmahasiswa)
             datasend.DataMahasiswa = append(datasend.DataMahasiswa, tempmahasiswa)
         }
+
+        err = h.Find(bson.M{"iduser": datasend.DataMataKuliah.IdKordinator}).One(&datasend.DataDosen)
+        if err != nil {
+            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+            log.Println("Failed find datamatakuliah: ", err)
+            return
+        } 
       
 
         respBody, err := json.MarshalIndent(datasend, "", "  ")

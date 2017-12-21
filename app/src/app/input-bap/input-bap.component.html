@@ -1,58 +1,58 @@
-	<br>
-	<div class="col-md-12">
-	    <div class="modal-content">
-	        <div class="panel-heading">
-	            <h1 style="text-align: center">Berita Acara Perkuliahan</h1>
-	        </div>
-	        <div class="panel-body">
-		        
-		            <form role="form">
-		                <fieldset style="padding: 0px 40px">
-		                    <div class="form-group">
-		                       <label>Mata Kuliah</label>
-		                       <input auto-complete [(ngModel)]="matkul" [source]="daftarMatkul" class="form-control" name="matkul" />
-		                    </div>
-		                    <div class="form-group">
-		                        <label for="exampleInputEmail1">Pilih Tanggal</label>
-			    				<input type="date" class="form-control">
-		                    </div>
-		                    <div class="form-group">
-		                        <label for="exampleInputEmail1">Materi</label>
-			    				<textarea class="form-control"></textarea>
-		                    </div>
-		                    <div class="form-group">
-		                        <label for="exampleInputEmail1">Nama Pengajar</label>
-			    				<input type="text" class="form-control">
-		                    </div>
-		                    <div class="row">
-		                    	<div class="col-sm-6">
-		                    		<div class="form-group">
-					                    <label for="exampleInputEmail1">Waktu Mulai</label>
-					                    <ngb-timepicker [(ngModel)]="startTime" name="waktu_mulai"></ngb-timepicker>
-					                </div>	
-		                    	</div>
-		                    	<div class="col-sm-6">
-		                    		<div class="form-group">
-					                    <label for="exampleInputEmail1">Waktu Selesai</label>
-					                    <ngb-timepicker [(ngModel)]="endTime" name="waktu_selesai"></ngb-timepicker>
-					                </div>	
-		                    	</div>
-		                    </div>
-		                    <div class="form-group">
-		                        <label for="exampleInputEmail1">Jumlah mahasiswa hadir</label>
-			    				<input type="text" class="form-control">
-		                    </div>
-		                    <div class="form-group">
-		                        <label for="exampleInputEmail1">Catatan penting</label>
-			    				<textarea class="form-control"></textarea>
-		                    </div>
-		                   
-		                    <!-- Change this to a button or input when using this as a form -->
-		                    <a href="javascript:;" class="btn btn-sm btn-success">Login</a>
-		                </fieldset>
-		            </form>
-		        
-	        </div>
-	    </div>
-	</div>
+<br>
+<div class="col-md-12">
+    <div class="modal-content">
+        <div class="panel-heading">
+            <h1 style="text-align: center">Berita Acara Perkuliahan</h1>
+        </div>
+        <div class="panel-body">
+	        
+	            <form (ngSubmit)="addBAP()" role="form">
+	                <fieldset style="padding: 0px 40px">
+	                    <div class="form-group">
+	                       <label>Mata Kuliah</label>
+	                       <input auto-complete [(ngModel)]="matkul" [source]="namaMatkul" (change)="getPengajar(matkul)" class="form-control" name="matkul" />
+	                    </div>
+	                    <div class="form-group">
+	                        <label for="exampleInputEmail1">Pilih Tanggal</label>
+		    				<input type="date" class="form-control">
+	                    </div>
+	                    <div class="form-group">
+	                        <label for="exampleInputEmail1">Materi</label>
+		    				<textarea class="form-control"></textarea>
+	                    </div>
+	                    <div class="form-group">
+	                        <label for="exampleInputEmail1">Nama Pengajar</label>
+		    				<input auto-complete [(ngModel)]="pengajar" [source]="namaPengajar"  class="form-control" name="pengajar">
+	                    </div>
+	                    <div class="row">
+	                    	<div class="col-sm-6">
+	                    		<div class="form-group">
+				                    <label for="exampleInputEmail1">Waktu Mulai</label>
+				                    <ngb-timepicker [(ngModel)]="startTime" name="waktu_mulai"></ngb-timepicker>
+				                </div>	
+	                    	</div>
+	                    	<div class="col-sm-6">
+	                    		<div class="form-group">
+				                    <label for="exampleInputEmail1">Waktu Selesai</label>
+				                    <ngb-timepicker [(ngModel)]="endTime" name="waktu_selesai"></ngb-timepicker>
+				                </div>	
+	                    	</div>
+	                    </div>
+	                    <div class="form-group">
+	                        <label for="exampleInputEmail1">Jumlah mahasiswa hadir</label>
+		    				<input type="text" class="form-control">
+	                    </div>
+	                    <div class="form-group">
+	                        <label for="exampleInputEmail1">Catatan penting</label>
+		    				<textarea class="form-control"></textarea>
+	                    </div>
+	                   
+	                    <!-- Change this to a button or input when using this as a form -->
+	                    <a href="javascript:;" class="btn btn-sm btn-success">Login</a>
+	                </fieldset>
+	            </form>
+	        
+        </div>
+    </div>
+</div>
 

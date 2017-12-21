@@ -4,30 +4,31 @@
                     <div class="panel-heading">
                       <div class="row">
                         <div class="col-md-11">
-                          <h2 class="text-center pull-left" style="padding-left: 30px;"> <i class="fa fa-calendar" aria-hidden="true"></i> MPPL (K1) </h2>
+                          <h2 class="text-center pull-left" style="padding-left: 30px;"> <i class="fa fa-calendar" aria-hidden="true"></i> {{mataKuliah}} ({{kelas}})</h2>
+                       
                           <a routerLink="/bap"><button class="btn btn-warning btn-lg pull-right" style="margin-top: 10px; margin-right: 55px">BAP</button></a>
                         </div>
                       </div>
                     </div>
 
-                    <div class="panel-body">
-                      <table class="table table-hover table-responsive">
+                    <div class="panel-body table-responsive">
+                      <table class="table table-hover">
                         <tbody>
                           <tr class="edit" id="detail">
                             <td> <b>Mata kuliah</b></td>
-                            <td> Pengantar Bioinformatika</td>
+                            <td> {{mataKuliah}}</td>
                           </tr> 
                           <tr class="edit" id="detail">
-                            <td> <b>Pengajar</b></td>
-                            <td> Wisnu Ananta Kusuma</td>
+                            <td> <b>Koordinator</b></td>
+                            <td> {{pengajar}}</td>
                           </tr>
                           <tr class="edit" id="detail">
-                            <td> <b>Tipe</b></td>
-                            <td> Kuliah</td>
+                            <td> <b>SKS</b></td>
+                            <td> {{SKS}}</td>
                           </tr>
                           <tr class="edit" id="detail">
                             <td> <b>Ruangan</b></td>
-                            <td> RK OFAC 4 B11</td>
+                            <td> {{namaRuangan}}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -39,7 +40,6 @@
                           <div class="col-md-8">
                             </div>
                             <div class="col-md-4">
-                            <p class="muted pull-right"><strong> © 2017 All rights reserved </strong></p>
                           </div>
                         </div>
                       </div>
@@ -51,41 +51,38 @@
                	<div class="panel panel-info">
                     <div class="panel-heading">
                       <div class="row">
-                        <div class="col-md-11">
-                          <h2 class="text-center pull-left" style="padding-left: 30px"> <i class="fa fa-users" aria-hidden="true"></i> Daftar Peserta </h2>
-                          <button class="btn btn-warning btn-lg pull-right" style="margin-top: 10px;margin-right: 55px">Edit</button>
+                        <div class="col-md-12 hidden-xs">
+                          <h2 class="text-center pull-left" style="padding-left: 30px;padding-right: 55px"> <i class="fa fa-users" aria-hidden="true"></i> Daftar Peserta </h2>
+                          <div *ngIf = "hasPJ == true">
+                            <button (click)="editPJ(idjadwalkuliah)" class="btn btn-warning btn-lg pull-right" style="margin-top: 10px; margin-right: 55px;">Edit
+                            </button>
+                          </div>
+                        </div>
+                        <div class="col-xs-12 visible-xs">
+                          <h2 class="text-center pull-left" style="padding-left: 30px; padding-right: 55px"> <i class="fa fa-users" aria-hidden="true"></i> Daftar Peserta </h2>
+                          
+                          
+                            <button class="btn btn-warning btn-lg" style="margin-top: 10px">Edit</button>
+                      
                         </div>
 
                       </div>
                     </div>
 
-                    <div class="panel-body">
-                      <table class="table table-hover  table-responsive">
+                    <div class="panel-body table-responsive">
+                      <table class="table table-hover">
                         <tbody>
-                          <tr class="edit" id="detail">
-                            <td>Mayor</td>
-                            <td> G64140030</td>
-                            <td> Rizki Ananda</td>
-                            <td><button class="btn btn-danger">Assign</button></td>
+                          <tr *ngFor="let data of datamahasiswa; let i = index" class="edit" id="detail">
+                            <td>{{data.statusmayor}}</td>
+                            <td> {{data.nim}}</td>
+                            <td> {{data.nama}}</td>
+                            <div *ngIf = "hasPJ == false">
+                              <td><button (click)="assignPJ(idjadwalkuliah, data.iduser)" class="btn btn-danger">Assign</button></td>
+                            </div>
+                            <div *ngIf = "hasPJ == true">
+                              <td>{{data.statuspj}}</td>
+                            </div>
                           </tr> 
-                          <tr class="edit" id="detail">
-                            <td>Mayor</td>
-                            <td> G64140047</td>
-                            <td> Baby Dhy </td>
-                            <td><button class="btn btn-danger">Assign</button></td>
-                          </tr>
-                          <tr class="edit" id="detail">
-                            <td>Mayor</td>
-                            <td> G64140075</td>
-                            <td> Arief Maulidhy Nugroho</td>
-                            <td><button class="btn btn-danger">Assign</button></td>
-                          </tr>
-                          <tr class="edit" id="detail">
-                            <td>Mayor</td>
-                            <td> G64140088</td>
-                            <td> Wawan Setyadi</td>
-                            <td><button class="btn btn-danger">Assign</button></td>
-                          </tr>
                         </tbody>
                       </table>
                     </div>

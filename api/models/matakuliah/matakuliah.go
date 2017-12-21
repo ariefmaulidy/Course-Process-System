@@ -18,6 +18,7 @@ type MataKuliah struct {
     KodeMataKuliah  string      `json:"kodematakuliah"`
 	IdKordinator	int	 		`json:"idkordinator"`
 	Semester		int		    `json:"semester"`
+    SKS             string       `json:"sks"`
 }
 
 func RoutesMataKuliah(mux *goji.Mux, session *mgo.Session) {

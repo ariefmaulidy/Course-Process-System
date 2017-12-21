@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "log"
     "net/http"
+    "strconv"
 
 	"goji.io"
     "goji.io/pat"
@@ -14,6 +15,8 @@ import (
     "../matakuliah"
     "../ruangan"
     "../jadwalkuliah"
+    "../dosen"
+
 )
 
 type Pengajar struct {
@@ -27,6 +30,7 @@ func RoutesPengajar(mux *goji.Mux, session *mgo.Session) {
     mux.HandleFunc(pat.Post("/addpengajar"), AddPengajar(session))
 	mux.HandleFunc(pat.Get("/pengajar/:idpengajar"), auth.Validate(GetAttributePengajar(session)))
 	mux.HandleFunc(pat.Get("/jadwalmengajar"), auth.Validate(JadwalMengajar(session)))
+    mux.HandleFunc(pat.Get("/getpengajar/:idmatakuliah"), auth.Validate(GetPengajar(session)))
 }
 
 func AllPengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
@@ -122,6 +126,7 @@ func GetAttributePengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Re
 
         jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
 	}
+
 }
 
 func JadwalMengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
@@ -191,4 +196,41 @@ func JadwalMengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request)
             return
         }
 	}
+}
+
+func GetPengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        session := s.Copy()
+        defer session.Close()
+
+        c := session.DB("ccs").C("pengajar")
+        d := session.DB("ccs").C("dosen")
+
+        var DataPengajar []Pengajar
+        var DataDosen []dosen.Dosen 
+
+        IdMataKuliah, _ := strconv.Atoi(pat.Param(r, "idmatakuliah"))
+
+
+        err := c.Find(bson.M{"idmatakuliah":IdMataKuliah}).All(&DataPengajar)
+        if err != nil {
+            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+            log.Println("Failed get all pengajar: ", err)
+            return
+        }
+
+        var tempdosen dosen.Dosen
+
+        for _,data := range DataPengajar {
+            d.Find(bson.M{"iduser": data.IdUser}).One(&tempdosen)
+            DataDosen = append(DataDosen, tempdosen)
+        }
+
+        respBody, err := json.MarshalIndent(DataDosen, "", "  ")
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
+    }
 }

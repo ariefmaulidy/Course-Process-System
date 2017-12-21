@@ -209,6 +209,9 @@ func Register(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
             if r.FormValue("nim") != "" {
                 mhs.NIM = r.FormValue("nim")
             }
+            if r.FormValue("status") != "" {
+                mhs.Status = r.FormValue("status")
+            }
             mhs.IdUser = currentId
 
             e := session.DB("ccs").C("mahasiswa")

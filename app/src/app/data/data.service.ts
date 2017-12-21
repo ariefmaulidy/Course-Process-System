@@ -23,7 +23,10 @@ export class DataService{
 	public urlEditBAP = this.hostname + 'editbap';
 
 	//cgd
-	public urlGetCGD = this.hostname + 'cgd'; //untuk all tidak ditambahkan parameter
+	public urlGetCGD = this.hostname + 'roomcgd'; //untuk all tidak ditambahkan parameter
+
+	//matakuliah
+	public urlGetMataKuliah = this.hostname + 'matakuliah';
 
 	//jadwalkuliah
 	public urlGetJadwalKuliah = this.hostname + 'detailjadwalkuliah'; //untuk all tidak ditambahkan parameter
@@ -31,6 +34,7 @@ export class DataService{
 	//pengajar
 	public urlGetPengajar = this.hostname + 'pengajar'; //untuk all tidak ditambahkan parameter
 	public urlGetJadwalMengajar = this.hostname + 'jadwalmengajar';
+	public urlGetPengajarBAP = this.hostname + 'getpengajar';
 
 	//pengelolaruangan
 	public urlPersetujuanPesanan = this.hostname + 'persetujuanpesanan';
@@ -45,6 +49,7 @@ export class DataService{
 	//tatausaha
 	public urlAssignPJKelas = this.hostname + 'assignpjkelas';
 	public urlGetListRuanganBook = this.hostname + 'listbookruangan'; //paramnya tanggal
+	public urlEditPJKelas = this.hostname + 'editpjkelas'; 
 
 	//tempcgd
 	public urlTempCGD = this.hostname + 'tempcgd'; //untuk all tidak ditambahkan parameter

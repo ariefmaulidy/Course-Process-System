@@ -1,6 +1,9 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild , EventEmitter} from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import { Events, Content, TextInput } from 'ionic-angular';
+import { Http, Headers} from '@angular/http';
+
+import { DataProvider } from '../../providers/data/data';
 
 @IonicPage()
 @Component({
@@ -11,8 +14,8 @@ export class ChatroomPage {
   @ViewChild(Content) content: Content;
   @ViewChild('chat_input') messageInput: TextInput;
   chatInfo: any;
-  userId = 1;
-  msgList = [
+/*  userId = 1;*/
+  /*msgList = [
     {
       messageId: 1,
       userId: 1,
@@ -45,10 +48,30 @@ export class ChatroomPage {
       message: 'Ok Pak',     
       status: 'pending'
     }
-  ];
+  ];*/
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, public events: Events) {
+    //socket
+  private ws: WebSocket;//server socket 
+    private listener: EventEmitter<any> = new EventEmitter();
+  //
+
+  //isiDataSend//
+  private namamatkul;
+  private isipesan: any[] = [];
+  private namapengirim: any[] = [];
+  private classpengirim: any[] = [];
+  private status: any[] = [];
+  private passedtime: any[] = [];
+
+/*  private dataChat: any[] = [];*/
+
+  private checkStatus1 = "Bukan Saya";
+  private checkStatus2 = "Saya"; 
+
+
+  constructor(public navCtrl: NavController, public navParams: NavParams, public events: Events, public data: DataProvider,  public http: Http) {
     this.chatInfo = this.navParams;
+     this.realTimeChatGroup(this.chatInfo)
   }
 
   onFocus() {
@@ -56,8 +79,19 @@ export class ChatroomPage {
     this.scrollToBottom();
   }
 
-  sendMsg() {
-    console.log('Message Send');
+  sendMsg(pesan) {
+    let creds = JSON.stringify({isipesan: pesan});
+
+    var headers = new Headers();
+    headers.append("Content-Type", "application/json");
+    this.http.post(this.data.urlAddPesan + "/" +this.chatInfo, creds, {withCredentials: true,headers: headers})
+    .subscribe(res => {
+      if(res['status'] == 201){
+        console.log("pesan dikirim");
+      } else {
+        console.log("pesan gagal dikirim");
+      }
+    });
   }
 
   scrollToBottom() {
@@ -67,5 +101,26 @@ export class ChatroomPage {
       }
     }, 400)
   }
+
+
+  //socket
+  realTimeChatGroup(idcgd){
+    this.ws = new WebSocket(this.data.urlSocket + "/" + idcgd);
+    this.ws.onmessage = event => {
+      var msg = JSON.parse(event.data);
+      if(msg != null){
+        this.listener.emit({"type": "message", "data":msg});
+        for(var i=0; i < msg.length; i++){
+            this.isipesan[i] = msg[i].isipesan;
+            this.namapengirim[i] = msg[i].namapengirim;
+            this.classpengirim[i] = msg[i].classpengirim;
+            this.status[i] = msg[i].status;
+            this.passedtime[i] = msg[i].passedtime;
+        }
+      }
+    }
+  }
+
+
 
 }

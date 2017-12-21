@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { RouterModule } from '@angular/router';
+import {NgxPaginationModule} from 'ngx-pagination';
 
 import { AppComponent } from './app.component';
 import { NavbarComponent } from './navbar/navbar.component';
@@ -18,7 +19,7 @@ import { Ng2AutoCompleteModule } from 'ng2-auto-complete';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { BapComponent } from './bap/bap.component';
 import { LoginComponent } from './login/login.component';
-
+import { DataService } from './data/data.service';
 
 @NgModule({
   declarations: [
@@ -32,13 +33,14 @@ import { LoginComponent } from './login/login.component';
     RuanganComponent,
     ChatgrupComponent,
     InputBapComponent,
-    BapComponent,
+     BapComponent,
     LoginComponent,
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpModule,
+    NgxPaginationModule,
     NgbModule.forRoot(),
     Ng2AutoCompleteModule,
     RouterModule.forRoot([
@@ -59,7 +61,7 @@ import { LoginComponent } from './login/login.component';
         component: DetailjadwalComponent
       },
       {
-        path : 'detailjadwal/:id_matkul',
+        path : 'detailjadwal/:idmatkul',
         component: DetailjadwalComponent
       },
       {
@@ -71,7 +73,7 @@ import { LoginComponent } from './login/login.component';
         component: RuanganComponent
       },
       {
-        path : 'chatgrup',
+        path : 'chatgrup/:idcgd',
         component: ChatgrupComponent
       },
       {
@@ -94,6 +96,7 @@ import { LoginComponent } from './login/login.component';
     ], { useHash: true })
 
   ],
+  providers: [DataService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

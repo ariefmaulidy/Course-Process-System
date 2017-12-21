@@ -1,105 +1,68 @@
-	<br><br>
-	<div class="row">
-		<div class="col-md-3">
-			<form>
-			  <div class="form-group">
-			    <label for="exampleInputEmail1">Pilih Tanggal</label>
-			    <input type="date" class="form-control" id="exampleInputEmail1" placeholder="Email">
-			  </div>
-			 </form>
-		 </div>
+<br><br>
+<div class="row">
+	<div class="col-md-3">
+		<form>
+		  <div class="form-group">
+		    <label for="exampleInputEmail1">Pilih Tanggal</label>
+		    <input type="date" name="tanggal" [ngModel] ="dt | date:'yyyy-MM-dd'" (ngModelChange)="dt = $event" [value]="datee | date:'yyyy-MM-dd'" (change)="listruanganbook(dt)">
+		  </div>
+		 </form>
 	 </div>
+ </div>
 
-	<div class="panel with-nav-tabs panel-primary">
-	    <div class="panel-heading">
-	            <ul class="nav nav-tabs nav-justified">
-	                <li class="active"><a href="#tab1default" data-toggle="tab"><h3>Pesan Ruangan</h3></a></li>
-	                <li><a href="#tab2default" data-toggle="tab"><h3>List Pemesanan</h3></a></li>
-	                
-	            </ul>
-	    </div>
-	    <div class="panel-body">
-	        <div class="tab-content">
-	            <div class="tab-pane fade in active" id="tab1default">           
-					<br>
-						<div class="row">
-							<div class="col-md-11">
-							    <div class="panel panel-info" data-toggle="collapse" data-parent="#accordion" href="#filterPanel">
-							        <div class="panel-heading" style="padding: 20px" >
-							            <h4 class="panel-title">
-							                <a data-toggle="collapse" data-parent="#accordion" href="#filterPanel">RKU 2.01</a>
-							                <span class="pull-right panel-collapse-clickable" data-toggle="collapse" data-parent="#accordion" href="#filterPanel">
-							                    <i class="glyphicon glyphicon-chevron-down"></i>
-							                </span>
-							            </h4>
-							        </div>
-							        <div id="filterPanel" class="panel-collapse panel-collapse collapse">
-							            <div class="panel-body">
-							               <table class="table table-bordered">
-											  <thead>
-											  	<tr>
-											  		<th class="text-center">No</th>
-												  	<th class="text-center">Keperluan</th>
-												  	<th class="text-center">waktu</th>
-											  	</tr>
-											  </thead>
-											  <tbody>
-											  	<tr>
-											  		<td class="text-center">1</td>
-												  	<td class="text-center">Ngampus</td>
-												  	<td class="text-center">10.00-12.00</td>
-											  	</tr>
-											  </tbody>
-										   </table>
-							            </div>
-							        </div>
-							    </div>
-							</div>
-							<div class="col-md-1">
-								<button data-toggle="modal" data-target="#myModal" class="btn btn-warning" style="margin-left: -15px;padding: 10px"><h4>Pesan</h4></button>
-							</div>
+<div class="panel with-nav-tabs panel-primary">
+    <div class="panel-heading">
+            <ul class="nav nav-tabs nav-justified">
+                <li class="active"><a href="#tab1default" data-toggle="tab"><h3>Pesan Ruangan</h3></a></li>
+                <li><a href="#tab2default" data-toggle="tab"><h3>List Pemesanan</h3></a></li>
+                
+            </ul>
+    </div>
+    <div class="panel-body">
+        <div class="tab-content">
+            <div class="tab-pane fade in active" id="tab1default">           
+				<br>
+					<div *ngFor="let ruangan of dataruangan | paginate: { itemsPerPage: 10, currentPage: halaman }; let i = index" class="row">
+						<div class="col-md-11">
+						    <div class="panel panel-info" data-toggle="collapse" data-parent="#accordion" [attr.href]="'#filterPanel' + i">
+						        <div class="panel-heading" style="padding: 20px" >
+						            <h4 class="panel-title">
+						                <a data-toggle="collapse" data-parent="#accordion" [attr.href]="'#filterPanel' + i">{{ruangan.namaruangan}}</a>
+						                <span class="pull-right panel-collapse-clickable" data-toggle="collapse" data-parent="#accordion" [attr.href]="'#filterPanel' + i">
+						                    <i class="glyphicon glyphicon-chevron-down"></i>
+						                </span>
+						            </h4>
+						        </div>
+						        <div [attr.id]="'filterPanel' + i" class="panel-collapse panel-collapse collapse">
+						            <div class="panel-body">
+						               <table class="table table-bordered">
+										  <thead>
+										  	<tr>
+											  	<th class="text-center">MataKuliah</th>
+											  	<th class="text-center">Waktu</th>
+										  	</tr>
+										  </thead>
+										  <tbody>
+										  	<tr *ngFor="let matkul of dataMataKuliah">
+											  	<td *ngIf="matkul.idRuangan == ruangan.idruangan" class="text-center">{{matkul.namaMatkul}}</td>
+											  	<td *ngIf="matkul.idRuangan == ruangan.idruangan" class="text-center">{{matkul.waktu}}</td>
+										  	</tr>
+										  </tbody>
+									   </table>
+						            </div>
+						        </div>
+						    </div>
 						</div>
+						<div class="col-md-1">
+							<button class="btn btn-warning" style="margin-left: -20px;padding: 10px"><h4>Pesan</h4></button>
+						</div>
+					</div>
 
-						<div class="row">
-							<div class="col-md-11">
-							    <div class="panel panel-info" data-toggle="collapse" data-parent="#accordion" href="#filterPanel2">
-							        <div class="panel-heading" style="padding: 20px" >
-							            <h4 class="panel-title">
-							                <a data-toggle="collapse" data-parent="#accordion" href="#filterPanel2">RKU 2.02</a>
-							                <span class="pull-right panel-collapse-clickable" data-toggle="collapse" data-parent="#accordion" href="#filterPanel">
-							                    <i class="glyphicon glyphicon-chevron-down"></i>
-							                </span>
-							            </h4>
-							        </div>
-							        <div id="filterPanel2" class="panel-collapse panel-collapse collapse">
-							            <div class="panel-body">
-							                <table class="table table-bordered">
-											  <thead>
-											  	<tr>
-											  		<th class="text-center">No</th>
-												  	<th class="text-center">Keperluan</th>
-												  	<th class="text-center">waktu</th>
-											  	</tr>
-											  </thead>
-											  <tbody>
-											  	<tr>
-											  		<td class="text-center">1</td>
-												  	<td class="text-center">Ngampus</td>
-												  	<td class="text-center">10.00-12.00</td>
-											  	</tr>
-											  </tbody>
-										   </table>
-							            </div>
-							        </div>
-							    </div>
-							</div>
-							<div class="col-md-1">
-								<button data-toggle="modal" data-target="#myModal" class="btn btn-warning" style="margin-left: -15px;padding: 10px"><h4>Pesan</h4></button>
-							</div>
-						</div>		
-	            </div>
+					 <pagination-controls (pageChange)="halaman = $event">
+                    </pagination-controls>
+            </div>
 
-	            <div class="tab-pane fade" id="tab2default">
+            <div class="tab-pane fade" id="tab2default">
 						
 			
 								<div class="table-responsive">
@@ -133,12 +96,12 @@
 							
 							
 				</div>
-	            
-	        </div>
-	    </div>
-	</div>
+            
+        </div>
+    </div>
+</div>
 
-	<div class="modal fade" tabindex="-1" role="dialog" id="myModal">
+<div class="modal fade" tabindex="-1" role="dialog" id="myModal">
 			<div class="modal-dialog" role="document">
 			  <div class="modal-content">
 				<div class="modal-header">
@@ -182,3 +145,4 @@
 			  </div>
 			</div>
 		  </div>
+

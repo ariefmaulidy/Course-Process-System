@@ -4,6 +4,8 @@ import(
 	"net/http"
 	"time"
     "log"
+    "fmt"
+    "strconv"
 
 	"github.com/gorilla/websocket"
 	"goji.io"
@@ -16,6 +18,7 @@ import(
     "../models/mahasiswa"
     "../models/dosen"
     "../models/pesan"
+    "../models/chatgroupdiscussion"
     "../jsonhandler"
     "../auth"
 )
@@ -28,6 +31,7 @@ type DataSend struct {
 	NamaPengirim 	string 	`json:"namapengirim"`
 	ClassPengirim 	string 	`json:"classpengirim"`
 	Status 			string 	`json:"status"` //menandakan siapa orangnya
+	PassedTime 		string `json:"passedtime"`
 }
 
 func RoutesSocket(mux *goji.Mux, session *mgo.Session){
@@ -59,13 +63,15 @@ func GetRoomCGD(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 	 	clients[conn] = true
 	 	//
 
-	 	idcgd := pat.Param(r, "idcgd")
+	 	idcgd, _ := strconv.Atoi(pat.Param(r, "idcgd"))
 	 	session := s.Copy()
     	
 		cPesan := session.DB("ccs").C("pesan")
 		cMahasiswa := session.DB("ccs").C("mahasiswa")
 		cDosen := session.DB("ccs").C("dosen")
 		cTu	:= session.DB("ccs").C("tatausaha")
+		cgd := session.DB("ccs").C("chatgroupdiscussion")
+		tempcgd := session.DB("ccs").C("tempcgd")
 
 		go func(conn *websocket.Conn){
 			for {
@@ -104,7 +110,13 @@ func GetRoomCGD(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 				        return
 				    }
 
+				    var tempjumlah chatgroupdiscussion.ChatGroupDiscussion
+
+				    cgd.Find(bson.M{"idcgd": idcgd}).One(&tempjumlah)
+				    tempcgd.Update(bson.M{"$and": []bson.M{bson.M{"idcgd": idcgd}, bson.M{"iduser": claims.IdUser}}}, bson.M{"$set": bson.M{"jumlahpesan": tempjumlah.JumlahPesan}})
+
 				    for _,message := range pesan {
+				    	passedTime := fmt.Sprintf("%s",time.Now().Sub(message.SendAt))
 				    	if message.ClassPengirim == "TataUsaha"{
 				    		var pengirim tatausaha.Tatausaha
 				    		err := cTu.Find(bson.M{"iduser": message.IdPengirim}).One(&pengirim)
@@ -114,9 +126,9 @@ func GetRoomCGD(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 					            return
 					        }
 					        if message.IdPengirim == claims.IdUser {
-					        	datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Saya"})
+					        	datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Saya", PassedTime: passedTime})
 				    		} else {
-				    			datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Bukan Saya"})
+				    			datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Bukan Saya", PassedTime: passedTime})
 				    		}
 				    	}
 				    	if message.ClassPengirim == "Dosen"{
@@ -128,9 +140,9 @@ func GetRoomCGD(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 					            return
 					        }
 					        if message.IdPengirim == claims.IdUser {
-					        	datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Saya"})
+					        	datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Saya", PassedTime: passedTime})
 				    		} else {
-				    			datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Bukan Saya"})
+				    			datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Bukan Saya", PassedTime: passedTime})
 				    		}
 				    	}
 				    	if message.ClassPengirim == "Mahasiswa"{
@@ -142,9 +154,9 @@ func GetRoomCGD(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
 					            return
 					        }
 					        if message.IdPengirim == claims.IdUser {
-					        	datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Saya"})
+					        	datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Saya", PassedTime: passedTime})
 				    		} else {
-				    			datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Bukan Saya"})
+				    			datasend = append(datasend, DataSend{IsiPesan: message.IsiPesan, NamaPengirim: pengirim.Nama, ClassPengirim: message.ClassPengirim, Status: "Bukan Saya", PassedTime: passedTime})
 				    		}
 				    	}
 					}

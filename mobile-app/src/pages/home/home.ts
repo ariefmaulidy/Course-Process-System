@@ -1,15 +1,18 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
+import { Http, Headers} from '@angular/http';
 
 import { ChatroomPage } from './../chatroom/chatroom';
-
+import { DataProvider } from '../../providers/data/data';
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
 export class HomePage {
+public checknol = 0;
+
   public dataChats = [
-    {
+/*    {
       id: 1,
       room: 'Metode Penelitian dan Telaah Pustaka', 
       lastChatText: 'Minggu depan kuliah digabung dan masing-masing kelompok mempresentasikan proposal penelitian mereka', 
@@ -36,14 +39,39 @@ export class HomePage {
       lastChatText: 'Minggu ini ga ada kuliah ya', 
       lastChatTime: '06.00', 
       unread: '13'
-    }
+    }*/
   ];
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
+  constructor(public navCtrl: NavController, public navParams: NavParams, public data: DataProvider,  public http: Http) {
   }
 
-  openChatroom($event, dataChat) {
-    this.navCtrl.push(ChatroomPage, dataChat);
+  openChatroom($event, id) {
+    this.navCtrl.push(ChatroomPage, id);
+  }
+
+  ionViewDidLoad(){
+    this.getAllCGD();
+  }
+
+  getAllCGD(){
+    let header= new Headers();
+    header.append('Content-type', 'application/json' );  
+    this.http.get(this.data.urlGetCGD, {withCredentials: true, headers:header})
+      .subscribe(res => {
+        let data = JSON.parse(res['_body']);
+        if(data != null){
+          for(let i = 0; i < data['datacgd'].length; i++){
+            const CGD = {
+                  id: data['datacgd'][i].idcgd,
+                  room :  data['datamatakuliah'][i].kodematakuliah+ " "+ data['datamatakuliah'][i].namamatakuliah + "(" + data['datajadwalkuliah'][i].KelasParalel + ")",
+                  unread : data['unread'][i],
+                  semester : data['datamatakuliah'][i].semester
+                }
+            this.dataChats.push(CGD);
+          }
+        }
+
+      })
   }
 
 }

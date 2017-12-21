@@ -17,12 +17,15 @@ import (
 type BAP struct {
 	IdBAP	        int			`json:"idbap"`
 	Tanggal	        time.Time   `json:"tanggal"`
-    IdMataKuliah    int         `json:"idmatakuliah"`
+    IdJadwalKuliah  int         `json:"idjadwalkuliah"`
     TopikKuliah     string      `json:"topikkuliah"`
     JumlahPeserta   int         `json:"jumlahpeserta"`
     IdUser          int         `json:"iduser"`
     CreatedBy       int         `json:"createdby"`
     UpdatedBy       int         `json:"updatedby"`
+    Status          string      `json:"status"`
+    Waktu           string      `json:"waktu"`
+    Catatan         string      `json:"catatan"`
 }
 
 func RoutesBAP(mux *goji.Mux, session *mgo.Session) {

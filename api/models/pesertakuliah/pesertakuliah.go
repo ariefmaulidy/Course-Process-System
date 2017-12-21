@@ -17,6 +17,8 @@ type PesertaKuliah struct {
     IdPesertaKuliah int         `json:"idpesertakuliah"`
     IdJadwalKuliah  int         `json:"idjadwalkuliah"`
     IdUser          int         `json:"iduser"`
+    StatusMayor     string      `json:"statusmayor"`
+    StatusPJ        string      `json:"statuspj"`
 }
 
 func RoutesPesertaKuliah(mux *goji.Mux, session *mgo.Session) {
