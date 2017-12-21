@@ -140,10 +140,8 @@ func JadwalMengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request)
 		if claims.Class == "Dosen"{
 			session := s.Copy()
 			defer session.Close()
-	
-			IdUser := claims.IdUser
 
-			c := session.DB("css").C("pengajar")
+			c := session.DB("ccs").C("pengajar")
 
 			var pengajar []Pengajar
 
@@ -151,9 +149,12 @@ func JadwalMengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request)
 				MataKuliah 	 string      `json:"matakuliah"`
 				Waktu	     string      `json:"waktu"`
 				Ruangan		 string      `json:"ruangan"`
+                KodeMataKuliah string   `json:"kodematakuliah"`
+                KelasParalel string     `json:"KelasParalel"`
+                Hari string     `json:"hari"`
             }
             realjadwal := []jadwalfix{}
-            err := c.Find(bson.M{"iduser": IdUser}).One(&pengajar)
+            err := c.Find(bson.M{"iduser": claims.IdUser}).All(&pengajar)
             
             if err != nil{
                 jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
@@ -162,28 +163,30 @@ func JadwalMengajar(s *mgo.Session) func(w http.ResponseWriter, r *http.Request)
             }
 
             for _,element := range pengajar{
-                a := session.DB("css").C("matakuliah")
+                a := session.DB("ccs").C("matakuliah")
                 var matkul matakuliah.MataKuliah
                 err := a.Find(bson.M{"idmatakuliah":element.IdMataKuliah}).One(&matkul) 
 
-                d := session.DB("css").C("jadwalkuliah")
+                d := session.DB("ccs").C("jadwalkuliah")
                 var jadwal []jadwalkuliah.JadwalKuliah
                 err = d.Find(bson.M{"idmatakuliah":element.IdMataKuliah}).All(&jadwal)
                 
                 if err != nil{
                     jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
-                    log.Println("Failed find pengajar: ", err)
+                    log.Println("Failed find jadwal: ", err)
                     return
                 }
 
                 for _,element2 := range jadwal{
-                    e := session.DB("css").C("ruangan")
+                    e := session.DB("ccs").C("ruangan")
                     var ruangan ruangan.Ruangan
                     e.Find(bson.M{"idruangan":element2.IdRuangan}).One(&ruangan)
-                    j := jadwalfix{MataKuliah:matkul.NamaMataKuliah, Waktu:element2.Waktu, Ruangan:ruangan.NamaRuangan }
+                    j := jadwalfix{Hari:element2.Hari,KodeMataKuliah:matkul.KodeMataKuliah,KelasParalel:element2.KelasParalel,MataKuliah:matkul.NamaMataKuliah, Waktu:element2.Waktu, Ruangan:ruangan.NamaRuangan }
                     realjadwal = append(realjadwal,j)
                 }
             }
+
+
 
             respBody, err := json.MarshalIndent(realjadwal, "", "  ")
             if err != nil {

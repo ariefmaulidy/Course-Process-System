@@ -14,6 +14,9 @@ import (
     "../matakuliah"
     "../../auth"
     "../tempcgd"
+
+    "../pengajar"
+    "../pesertakuliah"
 )
 
 type ChatGroupDiscussion struct {
@@ -134,6 +137,9 @@ func AllRoomChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *h
         d := session.DB("ccs").C("matakuliah")
         e := session.DB("ccs").C("jadwalkuliah")
         f := session.DB("ccs").C("tempcgd")
+        pesertaDB := session.DB("ccs").C("pesertakuliah")
+        pengajarDB := session.DB("ccs").C("pengajar")
+/*        tuDB := session.DB("ccs").C("tatausaha")*/
 
         type DataSend struct {
             DataCGD        []ChatGroupDiscussion                    `json:"datacgd"`
@@ -144,35 +150,116 @@ func AllRoomChatGroupDiscussion(s *mgo.Session) func(w http.ResponseWriter, r *h
 
         var dataSend DataSend
 
-        err := c.Find(bson.M{}).All(&dataSend.DataCGD)
-        if err != nil {
-            jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
-            log.Println("Failed get all chatgroupdiscussion: ", err)
-            return
+        if claims.Class == "TataUsaha"{
+
+            err := c.Find(bson.M{}).All(&dataSend.DataCGD)
+            if err != nil {
+                jsonhandler.SendWithJSON(w, "Database error", http.StatusInternalServerError)
+                log.Println("Failed get all chatgroupdiscussion: ", err)
+                return
+            }
+
+            for _,data := range dataSend.DataCGD {
+                var tempjadwal jadwalkuliah.JadwalKuliah
+                e.Find(bson.M{"idjadwalkuliah": data.IdJadwalKuliah}).One(&tempjadwal)
+                dataSend.DataJadwalKuliah = append(dataSend.DataJadwalKuliah, tempjadwal)
+                var tempunread tempcgd.TempCGD
+                f.Find(bson.M{"idcgd": data.IdCGD, "iduser": claims.IdUser}).One(&tempunread)
+                totalunread := data.JumlahPesan - tempunread.JumlahPesan
+                dataSend.Unread = append(dataSend.Unread, totalunread)
+            }
+
+            for _,data := range dataSend.DataJadwalKuliah {
+                var tempmatkul matakuliah.MataKuliah
+                d.Find(bson.M{"idmatakuliah": data.IdMataKuliah}).One(&tempmatkul)
+                dataSend.DataMataKuliah = append(dataSend.DataMataKuliah, tempmatkul)
+            }
+
+            respBody, err := json.MarshalIndent(dataSend, "", "  ")
+            if err != nil {
+                log.Fatal(err)
+            }
+
+            jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
         }
 
-        for _,data := range dataSend.DataCGD {
-            var tempjadwal jadwalkuliah.JadwalKuliah
-            e.Find(bson.M{"idjadwalkuliah": data.IdJadwalKuliah}).One(&tempjadwal)
-            dataSend.DataJadwalKuliah = append(dataSend.DataJadwalKuliah, tempjadwal)
-            var tempunread tempcgd.TempCGD
-            f.Find(bson.M{"idcgd": data.IdCGD, "iduser": claims.IdUser}).One(&tempunread)
-            totalunread := data.JumlahPesan - tempunread.JumlahPesan
-            dataSend.Unread = append(dataSend.Unread, totalunread)
+        if claims.Class == "Dosen" {
+            var temppengajar []pengajar.Pengajar
+            pengajarDB.Find(bson.M{"iduser": claims.IdUser}).All(&temppengajar)
+
+            
+
+            for _,data := range temppengajar{
+                var tempmatkul matakuliah.MataKuliah
+                d.Find(bson.M{"idmatakuliah": data.IdMataKuliah}).One(&tempmatkul)
+                dataSend.DataMataKuliah = append(dataSend.DataMataKuliah, tempmatkul)            
+            }
+
+            for _,data := range dataSend.DataMataKuliah{
+                var tempjadwal []jadwalkuliah.JadwalKuliah
+                e.Find(bson.M{"idmatakuliah": data.IdMataKuliah}).All(&tempjadwal)
+                for _,datajadwal := range tempjadwal{
+                    dataSend.DataJadwalKuliah = append(dataSend.DataJadwalKuliah, datajadwal)
+                }
+            }
+
+            for _,data := range dataSend.DataJadwalKuliah {
+                var tempcgd ChatGroupDiscussion
+                c.Find(bson.M{"idcgd": data.IdJadwalKuliah}).One(&tempcgd)
+                dataSend.DataCGD = append(dataSend.DataCGD, tempcgd)
+
+            }
+
+            for _,data := range dataSend.DataCGD {
+                var tempunread tempcgd.TempCGD
+                f.Find(bson.M{"idcgd": data.IdCGD, "iduser": claims.IdUser}).One(&tempunread)
+                totalunread := data.JumlahPesan - tempunread.JumlahPesan
+                dataSend.Unread = append(dataSend.Unread, totalunread)
+            }
+              respBody, err := json.MarshalIndent(dataSend, "", "  ")
+            if err != nil {
+                log.Fatal(err)
+            }
+
+            jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
+
         }
 
-        for _,data := range dataSend.DataJadwalKuliah {
-            var tempmatkul matakuliah.MataKuliah
-            d.Find(bson.M{"idmatakuliah": data.IdMataKuliah}).One(&tempmatkul)
-            dataSend.DataMataKuliah = append(dataSend.DataMataKuliah, tempmatkul)
-        }
+        if claims.Class == "Mahasiswa" {
+            var temppeserta []pesertakuliah.PesertaKuliah
+            pesertaDB.Find(bson.M{"iduser": claims.IdUser}).All(&temppeserta)
 
-        respBody, err := json.MarshalIndent(dataSend, "", "  ")
-        if err != nil {
-            log.Fatal(err)
-        }
+            for _,data := range temppeserta {
+                var tempcgd ChatGroupDiscussion
+                c.Find(bson.M{"idcgd": data.IdJadwalKuliah}).One(&tempcgd)
+                dataSend.DataCGD = append(dataSend.DataCGD, tempcgd)
 
-        jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
+                var tempjadwal jadwalkuliah.JadwalKuliah
+                e.Find(bson.M{"idjadwalkuliah": data.IdJadwalKuliah}).One(&tempjadwal)
+                dataSend.DataJadwalKuliah = append(dataSend.DataJadwalKuliah, tempjadwal)
+
+            }
+
+            for _,data := range dataSend.DataCGD {
+                var tempunread tempcgd.TempCGD
+                f.Find(bson.M{"idcgd": data.IdCGD, "iduser": claims.IdUser}).One(&tempunread)
+                totalunread := data.JumlahPesan - tempunread.JumlahPesan
+                dataSend.Unread = append(dataSend.Unread, totalunread)
+            }
+
+             for _,data := range dataSend.DataJadwalKuliah {
+                var tempmatkul matakuliah.MataKuliah
+                d.Find(bson.M{"idmatakuliah": data.IdMataKuliah}).One(&tempmatkul)
+                dataSend.DataMataKuliah = append(dataSend.DataMataKuliah, tempmatkul)
+            }
+
+              respBody, err := json.MarshalIndent(dataSend, "", "  ")
+            if err != nil {
+                log.Fatal(err)
+            }
+
+            jsonhandler.ResponseWithJSON(w, respBody, http.StatusOK)
+        }
     }
 }
 
